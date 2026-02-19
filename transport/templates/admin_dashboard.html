@@ -1,0 +1,880 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>K-BUS | Admin Dashboard</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet-omnivore/leaflet-omnivore.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<style>
+:root {
+    --primary: #6366f1;
+    --primary-dark: #4f46e5;
+    --secondary: #f59e0b;
+    --dark: #1e293b;
+    --light: #f8fafc;
+    --success: #10b981;
+    --danger: #ef4444;
+    --warning: #f59e0b;
+    --gray-100: #f1f5f9;
+    --gray-200: #e2e8f0;
+    --gray-300: #cbd5e1;
+    --gray-400: #94a3b8;
+    --gray-500: #64748b;
+    --gray-600: #475569;
+    --gray-700: #334155;
+    --gray-800: #1e293b;
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+    --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+    --radius-sm: 0.375rem;
+    --radius-md: 0.5rem;
+    --radius-lg: 0.75rem;
+    --radius-xl: 1rem;
+    --radius-2xl: 1.5rem;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    color: var(--gray-800);
+    line-height: 1.5;
+}
+
+/* Header Styles */
+header {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    padding: 1rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: var(--shadow-lg);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    border-bottom: 3px solid var(--secondary);
+}
+
+header > div:first-child {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 2rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    letter-spacing: -0.5px;
+}
+
+nav {
+    display: flex;
+    gap: 1rem;
+}
+
+nav a {
+    padding: 0.75rem 1.5rem;
+    font-weight: 600;
+    cursor: pointer;
+    color: var(--gray-700);
+    border-radius: var(--radius-xl);
+    transition: all 0.3s ease;
+    font-size: 0.95rem;
+    letter-spacing: 0.3px;
+    background: transparent;
+    border: 2px solid transparent;
+}
+
+nav a:hover {
+    background: var(--gray-100);
+    border-color: var(--primary);
+    color: var(--primary);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+/* Messages */
+.messages-container {
+    max-width: 800px;
+    margin: 1.5rem auto;
+    padding: 0 1rem;
+}
+
+.message {
+    padding: 1rem 1.25rem;
+    margin: 0.75rem 0;
+    border-radius: var(--radius-xl);
+    background: white;
+    border-left: 4px solid var(--primary);
+    box-shadow: var(--shadow-md);
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    animation: slideIn 0.3s ease;
+}
+
+.message::before {
+    content: '✓';
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    background: var(--primary);
+    color: white;
+    border-radius: 50%;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Sections */
+.section {
+    display: none;
+    margin: 2rem auto;
+    width: 90%;
+    max-width: 1000px;
+    background: rgba(255, 255, 255, 0.98);
+    backdrop-filter: blur(10px);
+    padding: 2.5rem;
+    border-radius: var(--radius-2xl);
+    box-shadow: var(--shadow-xl);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    animation: fadeIn 0.5s ease;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.section h2 {
+    font-size: 1.75rem;
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+    color: var(--gray-800);
+    position: relative;
+    padding-bottom: 0.75rem;
+}
+
+.section h2::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 60px;
+    height: 4px;
+    background: linear-gradient(90deg, var(--primary), var(--secondary));
+    border-radius: var(--radius-sm);
+}
+
+hr {
+    margin: 2rem 0;
+    border: none;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--gray-300), transparent);
+}
+
+/* Form Styles */
+form {
+    background: var(--gray-100);
+    padding: 2rem;
+    border-radius: var(--radius-xl);
+    margin-bottom: 2rem;
+}
+
+form:last-child {
+    margin-bottom: 0;
+}
+
+input, select {
+    width: 100%;
+    padding: 0.875rem 1.25rem;
+    margin: 0.5rem 0 1rem 0;
+    border: 2px solid var(--gray-200);
+    border-radius: var(--radius-xl);
+    font-family: 'Inter', sans-serif;
+    font-size: 0.95rem;
+    transition: all 0.3s ease;
+    background: white;
+    color: var(--gray-800);
+}
+
+input:hover, select:hover {
+    border-color: var(--gray-400);
+}
+
+input:focus, select:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+    transform: translateY(-1px);
+}
+
+input[readonly] {
+    background: var(--gray-200);
+    cursor: not-allowed;
+    opacity: 0.8;
+}
+
+input[readonly]:focus {
+    transform: none;
+    border-color: var(--gray-200);
+    box-shadow: none;
+}
+
+button {
+    width: 100%;
+    padding: 0.875rem 1.5rem;
+    border: none;
+    border-radius: var(--radius-xl);
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    color: white;
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin: 0.5rem 0;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    box-shadow: var(--shadow-md);
+}
+
+button:hover {
+    background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+}
+
+button:active {
+    transform: translateY(0);
+}
+
+/* Map Styles */
+.map {
+    height: 350px;
+    margin: 1.5rem 0;
+    border-radius: var(--radius-xl);
+    overflow: hidden;
+    box-shadow: var(--shadow-lg);
+    border: 3px solid white;
+}
+
+/* Data Navbar */
+.data-navbar {
+    display: flex;
+    justify-content: center;
+    gap: 0.75rem;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+    padding: 1rem;
+    background: var(--gray-100);
+    border-radius: var(--radius-xl);
+}
+
+.data-navbar button {
+    width: auto;
+    min-width: 120px;
+    padding: 0.75rem 1.25rem;
+    margin: 0;
+    background: white;
+    color: var(--gray-700);
+    border: 2px solid var(--gray-200);
+    text-transform: none;
+    font-weight: 600;
+    font-size: 0.95rem;
+    box-shadow: none;
+}
+
+.data-navbar button:hover {
+    background: var(--primary);
+    color: white;
+    border-color: var(--primary);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.data-navbar button:active {
+    transform: translateY(0);
+}
+
+/* Table Styles */
+.datatable {
+    max-height: 500px;
+    overflow: auto;
+    border-radius: var(--radius-lg);
+    background: white;
+    box-shadow: var(--shadow-lg);
+}
+
+.datatable table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    font-size: 0.95rem;
+}
+
+.datatable th {
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    color: white;
+    font-weight: 600;
+    padding: 1rem;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    text-align: left;
+    white-space: nowrap;
+}
+
+.datatable th:first-child {
+    border-top-left-radius: var(--radius-lg);
+}
+
+.datatable th:last-child {
+    border-top-right-radius: var(--radius-lg);
+}
+
+.datatable td {
+    padding: 1rem;
+    border-bottom: 1px solid var(--gray-200);
+    background: white;
+    color: var(--gray-700);
+}
+
+.datatable tr:hover td {
+    background: var(--gray-100);
+}
+
+.datatable tr:last-child td {
+    border-bottom: none;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--gray-100);
+    border-radius: var(--radius-md);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--gray-400);
+    border-radius: var(--radius-md);
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--gray-500);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    header {
+        flex-direction: column;
+        gap: 1rem;
+        padding: 1rem;
+    }
+    
+    nav {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+    
+    nav a {
+        padding: 0.5rem 1rem;
+        font-size: 0.85rem;
+    }
+    
+    .section {
+        padding: 1.5rem;
+        width: 95%;
+    }
+    
+    .data-navbar button {
+        min-width: 100px;
+        padding: 0.5rem 1rem;
+        font-size: 0.85rem;
+    }
+    
+    .datatable {
+        max-height: 400px;
+    }
+    
+    .datatable th, .datatable td {
+        padding: 0.75rem;
+        font-size: 0.85rem;
+    }
+}
+
+/* Loading Animation */
+.loading {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 3px solid var(--gray-200);
+    border-top-color: var(--primary);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Tooltip */
+[data-tooltip] {
+    position: relative;
+    cursor: help;
+}
+
+[data-tooltip]:before {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 0.5rem 1rem;
+    background: var(--gray-800);
+    color: white;
+    font-size: 0.875rem;
+    border-radius: var(--radius-md);
+    white-space: nowrap;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+    pointer-events: none;
+    z-index: 1000;
+}
+
+[data-tooltip]:hover:before {
+    opacity: 1;
+    visibility: visible;
+    bottom: 150%;
+}
+</style>
+
+<script>
+function showSection(id){
+    document.getElementById("route_stop").style.display="none";
+    document.getElementById("bus").style.display="none";
+    document.getElementById("viewdata").style.display="none";
+    document.getElementById(id).style.display="block";
+    setTimeout(function(){
+        if(window.routeMap){routeMap.invalidateSize();}
+        if(window.stopMap){stopMap.invalidateSize();}
+    },200);
+}
+</script>
+</head>
+
+<body>
+
+<header>
+    <div><i class="fas fa-bus" style="margin-right: 10px;"></i>K-BUS ADMIN</div>
+    <nav>
+        <a onclick="showSection('route_stop')"><i class="fas fa-route" style="margin-right: 8px;"></i>ROUTE & STOP</a>
+        <a onclick="showSection('bus')"><i class="fas fa-bus-alt" style="margin-right: 8px;"></i>BUS</a>
+        <a onclick="showSection('viewdata')"><i class="fas fa-chart-bar" style="margin-right: 8px;"></i>VIEW DATA</a>
+    </nav>
+</header>
+
+<div class="messages-container">
+{% if messages %}
+    {% for message in messages %}
+        <div class="message">
+            {{ message }}
+        </div>
+    {% endfor %}
+{% endif %}
+</div>
+
+<div id="route_stop" class="section" style="display:block">
+    <h2><i class="fas fa-route" style="margin-right: 12px; color: var(--primary);"></i>Route Registration</h2>
+    <form method="POST" action="/transport/create-route/">
+        {% csrf_token %}
+        <div style="position: relative;">
+            <i class="fas fa-road" style="position: absolute; left: 1rem; top: 2.2rem; color: var(--gray-400);"></i>
+            <input name="name" placeholder="Route Name" required style="padding-left: 2.5rem;">
+        </div>
+        
+        <div style="position: relative;">
+            <i class="fas fa-map-marker-alt" style="position: absolute; left: 1rem; top: 2.2rem; color: var(--gray-400);"></i>
+            <input name="source" id="source_name" placeholder="Source" required style="padding-left: 2.5rem;">
+        </div>
+        <input name="source_lat" id="source_lat" readonly placeholder="Latitude">
+        <input name="source_lon" id="source_lon" readonly placeholder="Longitude">
+        
+        <div style="position: relative;">
+            <i class="fas fa-flag-checkered" style="position: absolute; left: 1rem; top: 2.2rem; color: var(--gray-400);"></i>
+            <input name="destination" id="dest_name" placeholder="Destination" required style="padding-left: 2.5rem;">
+        </div>
+        <input name="dest_lat" id="dest_lat" readonly placeholder="Latitude">
+        <input name="dest_lon" id="dest_lon" readonly placeholder="Longitude">
+        
+        <div id="route_map" class="map"></div>
+        
+        <button type="submit"><i class="fas fa-plus-circle" style="margin-right: 8px;"></i>Register Route</button>
+    </form>
+
+    <h2 style="margin-top: 2.5rem;"><i class="fas fa-map-pin" style="margin-right: 12px; color: var(--primary);"></i>Stop Registration</h2>
+    <form method="POST" action="/transport/add-stop/">
+        {% csrf_token %}
+        <select name="route_id">
+            <option value="">Select Route</option>
+            {% for r in routes %}
+            <option value="{{r.id}}">{{r.name}}</option>
+            {% endfor %}
+        </select>
+        
+        <div style="position: relative;">
+            <i class="fas fa-tag" style="position: absolute; left: 1rem; top: 2.2rem; color: var(--gray-400);"></i>
+            <input name="name" id="stop_name" placeholder="Stop Name" required style="padding-left: 2.5rem;">
+        </div>
+        
+        <div style="position: relative;">
+            <i class="fas fa-sort-numeric-up-alt" style="position: absolute; left: 1rem; top: 2.2rem; color: var(--gray-400);"></i>
+            <input name="order" placeholder="Stop Order" required style="padding-left: 2.5rem;">
+        </div>
+        
+        <input name="latitude" id="lat" readonly placeholder="Latitude">
+        <input name="longitude" id="lng" readonly placeholder="Longitude">
+        
+        <div id="stop_map" class="map"></div>
+        
+        <button type="submit"><i class="fas fa-plus-circle" style="margin-right: 8px;"></i>Register Stop</button>
+    </form>
+</div>
+
+<div id="bus" class="section">
+    <h2><i class="fas fa-bus" style="margin-right: 12px; color: var(--primary);"></i>Bus Registration</h2>
+    <form method="POST" action="/transport/register-bus/">
+        {% csrf_token %}
+        <div style="position: relative;">
+            <i class="fas fa-hashtag" style="position: absolute; left: 1rem; top: 2.2rem; color: var(--gray-400);"></i>
+            <input name="vehicle_number" placeholder="Vehicle Number" required style="padding-left: 2.5rem;">
+        </div>
+        <select name="route_id">
+            <option value="">Select Route</option>
+            {% for r in routes %}
+            <option value="{{r.id}}">{{r.name}}</option>
+            {% endfor %}
+        </select>
+        <div style="position: relative;">
+            <i class="fas fa-user-tie" style="position: absolute; left: 1rem; top: 2.2rem; color: var(--gray-400);"></i>
+            <input name="operator_type" placeholder="Operator Type" required style="padding-left: 2.5rem;">
+        </div>
+        <div style="position: relative;">
+            <i class="fas fa-user" style="position: absolute; left: 1rem; top: 2.2rem; color: var(--gray-400);"></i>
+            <input name="operator_name" placeholder="Operator Name" required style="padding-left: 2.5rem;">
+        </div>
+        <div style="position: relative;">
+            <i class="fas fa-rupee-sign" style="position: absolute; left: 1rem; top: 2.2rem; color: var(--gray-400);"></i>
+            <input name="base_fare" placeholder="Base Fare" required style="padding-left: 2.5rem;">
+        </div>
+        <button type="submit"><i class="fas fa-plus-circle" style="margin-right: 8px;"></i>Register Bus</button>
+    </form>
+
+    <h2><i class="fas fa-id-card" style="margin-right: 12px; color: var(--primary);"></i>Driver Registration</h2>
+    <form method="POST" action="/transport/register-driver/">
+        {% csrf_token %}
+        <div style="position: relative;">
+            <i class="fas fa-user" style="position: absolute; left: 1rem; top: 2.2rem; color: var(--gray-400);"></i>
+            <input name="username" placeholder="Driver Username" required style="padding-left: 2.5rem;">
+        </div>
+        <div style="position: relative;">
+            <i class="fas fa-lock" style="position: absolute; left: 1rem; top: 2.2rem; color: var(--gray-400);"></i>
+            <input type="password" name="password" placeholder="Driver Password" required style="padding-left: 2.5rem;">
+        </div>
+        <button type="submit"><i class="fas fa-user-plus" style="margin-right: 8px;"></i>Register Driver</button>
+    </form>
+
+    <h2><i class="fas fa-link" style="margin-right: 12px; color: var(--primary);"></i>Assign Driver to Bus</h2>
+    <form method="POST" action="/transport/assign-driver-bus/">
+        {% csrf_token %}
+        <select name="driver_id" required>
+            <option value="">Select Driver</option>
+            {% for d in drivers %}
+            <option value="{{ d.id }}">{{ d.username }}</option>
+            {% endfor %}
+        </select>
+        <select name="bus_id" required>
+            <option value="">Select Bus</option>
+            {% for b in buses %}
+            <option value="{{ b.id }}">{{ b.vehicle_number }} ({{ b.otp_code }})</option>
+            {% endfor %}
+        </select>
+        <button type="submit"><i class="fas fa-handshake" style="margin-right: 8px;"></i>Assign</button>
+    </form>
+</div>
+
+<div id="viewdata" class="section">
+    <h2><i class="fas fa-database" style="margin-right: 12px; color: var(--primary);"></i>View Data</h2>
+    
+    <div class="data-navbar">
+        <button onclick="showData('routes_tbl')"><i class="fas fa-route" style="margin-right: 6px;"></i>Routes</button>
+        <button onclick="showData('stops_tbl')"><i class="fas fa-map-pin" style="margin-right: 6px;"></i>Stops</button>
+        <button onclick="showData('buses_tbl')"><i class="fas fa-bus" style="margin-right: 6px;"></i>Buses</button>
+        <button onclick="showData('users_tbl')"><i class="fas fa-users" style="margin-right: 6px;"></i>Users</button>
+        <button onclick="showData('tickets_tbl')"><i class="fas fa-ticket-alt" style="margin-right: 6px;"></i>Tickets</button>
+    </div>
+
+    <div id="routes_tbl" class="datatable">
+        <table>
+            <tr><th>ID</th><th>Name</th><th>Source</th><th>Destination</th></tr>
+            {% for r in routes %}
+            <tr>
+                <td><span class="badge">#{{ r.id }}</span></td>
+                <td><strong>{{ r.name }}</strong></td>
+                <td><i class="fas fa-map-marker-alt" style="color: var(--success); margin-right: 5px;"></i>{{ r.source }}</td>
+                <td><i class="fas fa-flag-checkered" style="color: var(--danger); margin-right: 5px;"></i>{{ r.destination }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+
+    <div id="stops_tbl" class="datatable" style="display:none;">
+        <table>
+            <tr><th>ID</th><th>Route</th><th>Name</th><th>Order</th><th>Lat</th><th>Lng</th></tr>
+            {% for s in stops %}
+            <tr>
+                <td><span class="badge">#{{ s.id }}</span></td>
+                <td>{{ s.route.name }}</td>
+                <td><strong>{{ s.name }}</strong></td>
+                <td><span class="order-badge">{{ s.order }}</span></td>
+                <td>{{ s.latitude|floatformat:4 }}</td>
+                <td>{{ s.longitude|floatformat:4 }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+
+    <div id="buses_tbl" class="datatable" style="display:none;">
+        <table>
+            <tr><th>ID</th><th>Vehicle</th><th>Operator</th><th>Route</th><th>Fare</th><th>OTP</th></tr>
+            {% for b in buses %}
+            <tr>
+                <td><span class="badge">#{{ b.id }}</span></td>
+                <td><strong>{{ b.vehicle_number }}</strong></td>
+                <td>{{ b.operator_name }}</td>
+                <td>{{ b.route.name }}</td>
+                <td><span class="fare-badge">₹{{ b.base_fare }}</span></td>
+                <td><span class="otp-badge">{{ b.otp_code }}</span></td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+
+    <div id="users_tbl" class="datatable" style="display:none;">
+        <table>
+            <tr><th>ID</th><th>Username</th><th>Role</th></tr>
+            {% for u in users %}
+            <tr>
+                <td><span class="badge">#{{ u.id }}</span></td>
+                <td><i class="fas fa-user-circle" style="margin-right: 8px; color: var(--primary);"></i>{{ u.username }}</td>
+                <td>
+                    {% if u.role == 'ADMIN' %}
+                    <span class="role-badge admin">{{ u.role }}</span>
+                    {% else %}
+                    <span class="role-badge">{{ u.role }}</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+
+    <div id="tickets_tbl" class="datatable" style="display:none;">
+        <table>
+            <tr><th>ID</th><th>User</th><th>Bus</th><th>From</th><th>To</th><th>Fare</th></tr>
+            {% for t in tickets %}
+            <tr>
+                <td><span class="badge">#{{ t.id }}</span></td>
+                <td>{{ t.user.username }}</td>
+                <td>{{ t.bus.vehicle_number }}</td>
+                <td><i class="fas fa-circle" style="color: var(--success); font-size: 8px; margin-right: 5px;"></i>{{ t.source_stop }}</td>
+                <td><i class="fas fa-circle" style="color: var(--danger); font-size: 8px; margin-right: 5px;"></i>{{ t.destination_stop }}</td>
+                <td><span class="fare-badge">₹{{ t.fare }}</span></td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+</div>
+
+<style>
+/* Additional styles for badges */
+.badge {
+    background: var(--gray-200);
+    padding: 0.25rem 0.5rem;
+    border-radius: var(--radius-md);
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--gray-700);
+}
+
+.order-badge {
+    background: var(--primary);
+    color: white;
+    padding: 0.25rem 0.75rem;
+    border-radius: 999px;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.fare-badge {
+    background: var(--success);
+    color: white;
+    padding: 0.25rem 0.75rem;
+    border-radius: 999px;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.otp-badge {
+    background: var(--warning);
+    color: var(--gray-800);
+    padding: 0.25rem 0.75rem;
+    border-radius: 999px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+}
+
+.role-badge {
+    background: var(--gray-200);
+    color: var(--gray-700);
+    padding: 0.25rem 0.75rem;
+    border-radius: 999px;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.role-badge.admin {
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    color: white;
+}
+
+/* Form group styling */
+.form-group {
+    position: relative;
+    margin-bottom: 1rem;
+}
+
+.form-group i {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--gray-400);
+    z-index: 1;
+}
+
+.form-group input,
+.form-group select {
+    padding-left: 2.5rem;
+}
+</style>
+
+{% load static %}
+
+<script>
+function showData(id){
+    document.querySelectorAll(".datatable").forEach(el=>{
+        el.style.display="none";
+    });
+    document.getElementById(id).style.display="block";
+}
+
+/* ROUTE MAP */
+var routeMap = L.map('route_map').setView([11.75,75.57],12);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© OpenStreetMap contributors'
+}).addTo(routeMap);
+
+var routeClick = 0;
+
+var routeLayer = omnivore.kml("{% static 'maps/K-BUS Route.kml' %}")
+.on('ready', function(){
+    routeMap.fitBounds(routeLayer.getBounds());
+    routeLayer.eachLayer(function(l){
+        var name = l.feature.properties.name || "Stop";
+        l.bindPopup(`
+            <div style="font-family: 'Inter', sans-serif; padding: 5px;">
+                <strong style="color: var(--primary);">${name}</strong>
+                <br>
+                <small>Click to ${routeClick==0 ? 'set as SOURCE' : 'set as DESTINATION'}</small>
+            </div>
+        `);
+        l.on('click', function(e){
+            if(routeClick==0){
+                document.getElementById("source_name").value=name;
+                document.getElementById("source_lat").value=e.latlng.lat;
+                document.getElementById("source_lon").value=e.latlng.lng;
+                routeClick=1;
+            }else{
+                document.getElementById("dest_name").value=name;
+                document.getElementById("dest_lat").value=e.latlng.lat;
+                document.getElementById("dest_lon").value=e.latlng.lng;
+                routeClick=0;
+            }
+        });
+    });
+}).addTo(routeMap);
+
+/* STOP MAP */
+var stopMap = L.map('stop_map').setView([11.75,75.57],12);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© OpenStreetMap contributors'
+}).addTo(stopMap);
+
+var stopLayer = omnivore.kml("{% static 'maps/K-BUS Route.kml' %}")
+.on('ready', function(){
+    stopMap.fitBounds(stopLayer.getBounds());
+    stopLayer.eachLayer(function(l){
+        var name = l.feature.properties.name || "Stop";
+        l.bindPopup(`
+            <div style="font-family: 'Inter', sans-serif; padding: 5px;">
+                <strong style="color: var(--primary);">${name}</strong>
+                <br>
+                <small>Click to select as stop</small>
+            </div>
+        `);
+        l.on('click', function(e){
+            document.getElementById("stop_name").value=name;
+            document.getElementById("lat").value=e.latlng.lat;
+            document.getElementById("lng").value=e.latlng.lng;
+        });
+    });
+}).addTo(stopMap);
+</script>
+
+</body>
+</html>

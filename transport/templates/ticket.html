@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>K-BUS | E-Ticket</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<style>
+:root {
+    --primary: #6366f1;
+    --primary-dark: #4f46e5;
+    --secondary: #f59e0b;
+    --success: #10b981;
+    --danger: #ef4444;
+    --warning: #f59e0b;
+    --dark: #1e293b;
+    --light: #f8fafc;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+}
+
+.ticket-container {
+    width: 100%;
+    max-width: 500px;
+    perspective: 1000px;
+}
+
+.ticket {
+    background: white;
+    border-radius: 2rem;
+    overflow: hidden;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    animation: flipIn 0.6s ease;
+    position: relative;
+}
+
+@keyframes flipIn {
+    from {
+        opacity: 0;
+        transform: rotateY(30deg) translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: rotateY(0) translateY(0);
+    }
+}
+
+.ticket-header {
+    background: linear-gradient(135deg, #6366f1, #4f46e5);
+    color: white;
+    padding: 2rem;
+    text-align: center;
+    position: relative;
+    clip-path: polygon(0 0, 100% 0, 100% 85%, 0 100%);
+}
+
+.ticket-header i {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    background: rgba(255, 255, 255, 0.2);
+    padding: 1rem;
+    border-radius: 50%;
+}
+
+.ticket-header h1 {
+    font-size: 2rem;
+    font-weight: 800;
+    margin-bottom: 0.5rem;
+}
+
+.ticket-header .ticket-id {
+    font-size: 1.2rem;
+    opacity: 0.9;
+    font-weight: 500;
+}
+
+.ticket-body {
+    padding: 2rem;
+    background: #f8fafc;
+}
+
+.info-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.info-item {
+    text-align: center;
+}
+
+.info-item i {
+    font-size: 1.5rem;
+    color: #6366f1;
+    margin-bottom: 0.5rem;
+}
+
+.info-item .label {
+    font-size: 0.85rem;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 0.25rem;
+}
+
+.info-item .value {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #1e293b;
+}
+
+.route-info {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 1.5rem;
+    margin: 1.5rem 0;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    position: relative;
+}
+
+.route-point {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    position: relative;
+    z-index: 1;
+}
+
+.route-point .point-marker {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #10b981;
+    position: relative;
+}
+
+.route-point .point-marker::after {
+    content: '';
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: rgba(16, 185, 129, 0.2);
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% {
+        width: 20px;
+        height: 20px;
+        opacity: 1;
+    }
+    100% {
+        width: 40px;
+        height: 40px;
+        opacity: 0;
+    }
+}
+
+.route-point.destination .point-marker {
+    background: #ef4444;
+}
+
+.route-point.destination .point-marker::after {
+    background: rgba(239, 68, 68, 0.2);
+}
+
+.route-line {
+    width: 2px;
+    height: 40px;
+    background: linear-gradient(to bottom, #10b981, #ef4444);
+    margin-left: 5px;
+    margin-top: 5px;
+    margin-bottom: 5px;
+}
+
+.route-details {
+    flex: 1;
+}
+
+.route-details .stop-name {
+    font-weight: 700;
+    color: #1e293b;
+    margin-bottom: 0.25rem;
+}
+
+.route-details .route-name {
+    font-size: 0.85rem;
+    color: #64748b;
+}
+
+.fare-section {
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: white;
+    padding: 1.5rem;
+    border-radius: 1.5rem;
+    text-align: center;
+    margin: 1.5rem 0;
+}
+
+.fare-section .label {
+    font-size: 0.9rem;
+    opacity: 0.9;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 0.5rem;
+}
+
+.fare-section .amount {
+    font-size: 3rem;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.25rem;
+}
+
+.fare-section .amount i {
+    font-size: 2rem;
+    opacity: 0.8;
+}
+
+.timer-section {
+    background: #f1f5f9;
+    padding: 1rem;
+    border-radius: 1rem;
+    text-align: center;
+}
+
+.timer-section .label {
+    font-size: 0.85rem;
+    color: #64748b;
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.timer-section .timer {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #ef4444;
+    font-family: monospace;
+    letter-spacing: 2px;
+}
+
+.ticket-footer {
+    background: white;
+    padding: 1.5rem;
+    border-top: 2px dashed #e2e8f0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: relative;
+}
+
+.ticket-footer::before,
+.ticket-footer::after {
+    content: '';
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    background: #f1f5f9;
+    border-radius: 50%;
+    top: -11px;
+}
+
+.ticket-footer::before {
+    left: -10px;
+}
+
+.ticket-footer::after {
+    right: -10px;
+}
+
+.qr-placeholder {
+    background: #1e293b;
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    font-size: 0.85rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.qr-placeholder i {
+    font-size: 1.2rem;
+}
+
+.validity {
+    color: #64748b;
+    font-size: 0.85rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.validity i {
+    color: #10b981;
+}
+
+.home-actions {
+    margin-top: 1.25rem;
+    display: flex;
+    justify-content: center;
+}
+
+.home-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.85rem 1.25rem;
+    border-radius: 999px;
+    text-decoration: none;
+    font-weight: 700;
+    color: white;
+    background: linear-gradient(135deg, #6366f1, #4f46e5);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+.home-btn:hover {
+    filter: brightness(1.05);
+}
+
+@media print {
+    body {
+        background: white;
+        padding: 0;
+    }
+    
+    .ticket-container {
+        max-width: 100%;
+    }
+    
+    .ticket {
+        box-shadow: none;
+        border: 1px solid #e2e8f0;
+    }
+}
+
+@media (max-width: 480px) {
+    .ticket-header h1 {
+        font-size: 1.5rem;
+    }
+    
+    .info-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .fare-section .amount {
+        font-size: 2.5rem;
+    }
+    
+    .timer-section .timer {
+        font-size: 1.5rem;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div class="ticket-container">
+    <div class="ticket">
+        <div class="ticket-header">
+            <i class="fas fa-bus"></i>
+            <h1>K-BUS E-Ticket</h1>
+            <div class="ticket-id">#{{ ticket.id }}</div>
+        </div>
+        
+        <div class="ticket-body">
+            <div class="info-grid">
+                <div class="info-item">
+                    <i class="fas fa-bus"></i>
+                    <div class="label">Bus Number</div>
+                    <div class="value">{{ ticket.bus.vehicle_number }}</div>
+                </div>
+                <div class="info-item">
+                    <i class="fas fa-calendar-alt"></i>
+                    <div class="label">Date</div>
+                    <div class="value">{{ ticket.created_at|date:"d M Y" }}</div>
+                </div>
+                <div class="info-item">
+                    <i class="fas fa-clock"></i>
+                    <div class="label">Time</div>
+                    <div class="value">{{ ticket.created_at|date:"H:i" }}</div>
+                </div>
+                <div class="info-item">
+                    <i class="fas fa-route"></i>
+                    <div class="label">Route</div>
+                    <div class="value">{{ ticket.bus.route.name }}</div>
+                </div>
+            </div>
+
+            <div class="route-info">
+                <div class="route-point">
+                    <div class="point-marker"></div>
+                    <div class="route-details">
+                        <div class="stop-name">{{ ticket.source_stop }}</div>
+                        <div class="route-name">Boarding Point</div>
+                    </div>
+                </div>
+                <div class="route-line"></div>
+                <div class="route-point destination">
+                    <div class="point-marker"></div>
+                    <div class="route-details">
+                        <div class="stop-name">{{ ticket.destination_stop }}</div>
+                        <div class="route-name">Drop-off Point</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="fare-section">
+                <div class="label">Total Fare</div>
+                <div class="amount">
+                    <i class="fas fa-rupee-sign"></i>
+                    {{ ticket.fare }}
+                </div>
+            </div>
+
+            {% if ticket.expires_at %}
+            <div class="timer-section">
+                <div class="label">
+                    <i class="fas fa-hourglass-half"></i>
+                    Valid Until
+                </div>
+                <div class="timer" id="timer"></div>
+                <div style="font-size: 0.85rem; color: #64748b; margin-top: 0.5rem;">
+                    {{ ticket.expires_at|date:"d M Y H:i" }}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="ticket-footer">
+            <div class="qr-placeholder">
+                <i class="fas fa-qrcode"></i>
+                SCAN ME
+            </div>
+            <div class="validity">
+                <i class="fas fa-check-circle"></i>
+                {% if ticket.expires_at %}
+                    Valid until {{ ticket.expires_at|date:"H:i" }}
+                {% else %}
+                    Valid for journey
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="home-actions">
+        <a class="home-btn" href="{% url 'passenger' %}">
+            <i class="fas fa-home"></i>
+            Back to Home
+        </a>
+    </div>
+</div>
+
+{% if ticket.expires_at %}
+<script>
+var expiry = new Date("{{ ticket.expires_at|date:'c' }}").getTime();
+
+var timer = setInterval(function(){
+    var now = new Date().getTime();
+    var distance = expiry - now;
+
+    if(distance <= 0){
+        clearInterval(timer);
+        document.getElementById("timer").innerHTML = "EXPIRED";
+        document.querySelector('.timer-section .timer').style.color = '#ef4444';
+        return;
+    }
+
+    var hours = Math.floor(distance / (1000*60*60));
+    var minutes = Math.floor((distance % (1000*60*60)) / (1000*60));
+    var seconds = Math.floor((distance % (1000*60)) / 1000);
+
+    document.getElementById("timer").innerHTML = 
+        hours.toString().padStart(2, '0') + "h " + 
+        minutes.toString().padStart(2, '0') + "m " + 
+        seconds.toString().padStart(2, '0') + "s";
+},1000);
+</script>
+{% endif %}
+
+</body>
+</html>

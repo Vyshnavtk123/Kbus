@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>K-BUS | Book Ticket</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<style>
+:root {
+    --primary: #6366f1;
+    --primary-dark: #4f46e5;
+    --secondary: #f59e0b;
+    --success: #10b981;
+    --danger: #ef4444;
+    --warning: #f59e0b;
+    --dark: #1e293b;
+    --light: #f8fafc;
+    --gray-100: #f1f5f9;
+    --gray-200: #e2e8f0;
+    --gray-300: #cbd5e1;
+    --gray-400: #94a3b8;
+    --gray-500: #64748b;
+    --gray-600: #475569;
+    --gray-700: #334155;
+    --gray-800: #1e293b;
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+    --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1);
+    --radius-sm: 0.375rem;
+    --radius-md: 0.5rem;
+    --radius-lg: 0.75rem;
+    --radius-xl: 1rem;
+    --radius-2xl: 1.5rem;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+}
+
+.card {
+    width: 100%;
+    max-width: 500px;
+    background: rgba(255, 255, 255, 0.98);
+    backdrop-filter: blur(10px);
+    padding: 2.5rem;
+    border-radius: var(--radius-2xl);
+    box-shadow: var(--shadow-xl);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    animation: slideUp 0.5s ease;
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+h2 {
+    font-size: 2rem;
+    font-weight: 800;
+    margin-bottom: 2rem;
+    color: var(--gray-800);
+    position: relative;
+    padding-bottom: 0.75rem;
+    text-align: center;
+    background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+h2::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80px;
+    height: 4px;
+    background: linear-gradient(90deg, var(--primary), var(--secondary));
+    border-radius: var(--radius-sm);
+}
+
+.otp-badge {
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    color: white;
+    padding: 0.75rem;
+    border-radius: var(--radius-xl);
+    text-align: center;
+    margin-bottom: 2rem;
+    font-weight: 600;
+    font-size: 1.2rem;
+    letter-spacing: 2px;
+    box-shadow: var(--shadow-md);
+}
+
+.otp-badge i {
+    margin-right: 0.5rem;
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    color: var(--gray-700);
+    font-size: 0.95rem;
+}
+
+label i {
+    color: var(--primary);
+    margin-right: 0.5rem;
+}
+
+select {
+    width: 100%;
+    padding: 1rem 1.25rem;
+    border: 2px solid var(--gray-200);
+    border-radius: var(--radius-xl);
+    font-family: 'Inter', sans-serif;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    background: white;
+    color: var(--gray-800);
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 1.25rem center;
+    background-size: 1rem;
+}
+
+select:hover {
+    border-color: var(--gray-400);
+}
+
+select:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+}
+
+select:disabled {
+    background-color: var(--gray-100);
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+.fare-container {
+    background: linear-gradient(135deg, #f6f9fc 0%, #f1f5f9 100%);
+    padding: 1.5rem;
+    border-radius: var(--radius-xl);
+    margin: 1.5rem 0;
+    text-align: center;
+    border: 2px dashed var(--primary);
+}
+
+.fare-label {
+    font-size: 0.9rem;
+    color: var(--gray-600);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 0.5rem;
+}
+
+.fare-amount {
+    font-size: 3rem;
+    font-weight: 800;
+    color: var(--success);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.25rem;
+}
+
+.fare-amount i {
+    font-size: 2rem;
+    color: var(--gray-400);
+}
+
+.fare-error {
+    color: var(--danger);
+    font-size: 0.9rem;
+    margin-top: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+button[type="submit"] {
+    width: 100%;
+    padding: 1.25rem;
+    border: none;
+    border-radius: var(--radius-xl);
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    color: white;
+    font-weight: 700;
+    font-size: 1.2rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    margin-top: 2rem;
+}
+
+button[type="submit"] i {
+    font-size: 1.2rem;
+}
+
+button[type="submit"]:hover {
+    background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+}
+
+button[type="submit"]:active {
+    transform: translateY(0);
+}
+
+.loading-spinner {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 3px solid rgba(255,255,255,0.3);
+    border-radius: 50%;
+    border-top-color: white;
+    animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+@media (max-width: 480px) {
+    .card {
+        padding: 1.5rem;
+    }
+    
+    h2 {
+        font-size: 1.75rem;
+    }
+    
+    .fare-amount {
+        font-size: 2.5rem;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div class="card">
+    <h2><i class="fas fa-ticket-alt" style="margin-right: 12px;"></i>Book Ticket</h2>
+    
+    <div class="otp-badge">
+        <i class="fas fa-key"></i> OTP: {{ otp }}
+    </div>
+
+    <form method="POST" action="{% url 'book_ticket' %}">
+        {% csrf_token %}
+        
+        <input type="hidden" name="otp" value="{{ otp }}">
+        <input type="hidden" name="user_id" value="{{ request.user.id }}">
+
+        <!-- ROUTE SELECT -->
+        <div class="form-group">
+            <label><i class="fas fa-route"></i> Select Route</label>
+            <select id="route" onchange="loadStops()" required>
+                <option value="">Choose a route</option>
+                {% for r in routes %}
+                <option value="{{ r.id }}">{{ r.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <!-- SOURCE -->
+        <div class="form-group">
+            <label><i class="fas fa-circle" style="color: var(--success);"></i> From (Source)</label>
+            <select name="source" id="source" onchange="onSourceChanged()" required>
+                <option value="">Select source stop</option>
+            </select>
+        </div>
+
+        <!-- DESTINATION -->
+        <div class="form-group">
+            <label><i class="fas fa-circle" style="color: var(--danger);"></i> To (Destination)</label>
+            <select name="destination" id="destination" onchange="onDestinationChanged()" required>
+                <option value="">Select destination stop</option>
+            </select>
+        </div>
+
+        <div class="fare-container">
+            <div class="fare-label">
+                <i class="fas fa-rupee-sign"></i> TOTAL FARE
+            </div>
+            <div class="fare-amount">
+                <i class="fas fa-rupee-sign"></i> <span id="fare">0</span>
+            </div>
+            <div id="fare_error" class="fare-error"></div>
+        </div>
+
+        <button type="submit">
+            <i class="fas fa-ticket-alt"></i>
+            BOOK TICKET
+            <i class="fas fa-arrow-right"></i>
+        </button>
+    </form>
+</div>
+
+<script>
+function getCookie(name){
+    let cookieValue=null;
+    if(document.cookie){
+        const cookies=document.cookie.split(';');
+        for(let i=0;i<cookies.length;i++){
+            const cookie=cookies[i].trim();
+            if(cookie.substring(0,name.length+1)===(name+'=')){
+                cookieValue=decodeURIComponent(cookie.substring(name.length+1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+/* LOAD STOPS BASED ON ROUTE */
+async function loadStops(){
+    const routeId=document.getElementById("route").value;
+    if(!routeId) return;
+
+    // Show loading state
+    document.getElementById("source").innerHTML='<option value="">Loading stops...</option>';
+    document.getElementById("destination").innerHTML='<option value="">Loading stops...</option>';
+
+    const res = await fetch(`/transport/get-route-stops/${routeId}/`);
+    const data = await res.json();
+
+    let src=document.getElementById("source");
+    let dst=document.getElementById("destination");
+
+    src.innerHTML='<option value="">Select source stop</option>';
+    dst.innerHTML='<option value="">Select destination stop</option>';
+
+    data.stops.forEach(stop=>{
+        src.innerHTML += `<option value="${stop.id}">${stop.name}</option>`;
+        dst.innerHTML += `<option value="${stop.id}">${stop.name}</option>`;
+    });
+
+    // Reset any previous selection + ensure same-stop cannot be chosen.
+    src.value = '';
+    dst.value = '';
+    syncStopDisables();
+    calculateFare();
+}
+
+function syncStopDisables(){
+    const source=document.getElementById("source").value;
+    const destination=document.getElementById("destination").value;
+    const src=document.getElementById("source");
+    const dst=document.getElementById("destination");
+
+    // Enable all first
+    Array.from(src.options).forEach(opt => { opt.disabled = false; });
+    Array.from(dst.options).forEach(opt => { opt.disabled = false; });
+
+    // Disable same option in the opposite list (except placeholder)
+    if(source){
+        const match = dst.querySelector(`option[value="${CSS.escape(source)}"]`);
+        if(match) match.disabled = true;
+        if(destination && destination === source){
+            dst.value = '';
+        }
+    }
+    if(destination){
+        const match = src.querySelector(`option[value="${CSS.escape(destination)}"]`);
+        if(match) match.disabled = true;
+        if(source && source === destination){
+            src.value = '';
+        }
+    }
+}
+
+function onSourceChanged(){
+    syncStopDisables();
+    calculateFare();
+}
+
+function onDestinationChanged(){
+    syncStopDisables();
+    calculateFare();
+}
+
+/* CALCULATE FARE */
+async function calculateFare(){
+    const source=document.getElementById("source").value;
+    const destination=document.getElementById("destination").value;
+    const otp="{{ otp }}";
+
+    if(!source || !destination) return;
+
+    if(source === destination){
+        document.getElementById("fare").innerHTML="0";
+        document.getElementById("fare_error").innerHTML='<i class="fas fa-exclamation-circle"></i> Source and destination cannot be the same stop';
+        return;
+    }
+
+    // Show loading state
+    document.getElementById("fare").innerHTML='<span class="loading-spinner"></span>';
+
+    const body=new URLSearchParams({otp,source,destination});
+
+    const res = await fetch("/transport/calculate-fare/",{
+        method:"POST",
+        headers:{
+            "Content-Type":"application/x-www-form-urlencoded",
+            "X-CSRFToken":getCookie('csrftoken')
+        },
+        body:body.toString()
+    });
+
+    const data=await res.json();
+
+    if(data.fare){
+        document.getElementById("fare").innerHTML=data.fare;
+        document.getElementById("fare_error").innerHTML="";
+    }else{
+        document.getElementById("fare").innerHTML="0";
+        document.getElementById("fare_error").innerHTML=`<i class="fas fa-exclamation-circle"></i> ${data.error || "Error calculating fare"}`;
+    }
+}
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', function() {
+    // Any initialization if needed
+});
+</script>
+
+</body>
+</html>

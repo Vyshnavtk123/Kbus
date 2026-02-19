@@ -1,0 +1,308 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2">
+  <Document>
+    <name>K-BUS Route</name>
+    <Style id="icon-1899-FFD600-normal">
+      <IconStyle>
+        <color>ff00d6ff</color>
+        <scale>1</scale>
+        <Icon>
+          <href>https://www.gstatic.com/mapspro/images/stock/503-wht-blank_maps.png</href>
+        </Icon>
+        <hotSpot x="32" xunits="pixels" y="64" yunits="insetPixels"/>
+      </IconStyle>
+      <LabelStyle>
+        <scale>0</scale>
+      </LabelStyle>
+    </Style>
+    <Style id="icon-1899-FFD600-highlight">
+      <IconStyle>
+        <color>ff00d6ff</color>
+        <scale>1</scale>
+        <Icon>
+          <href>https://www.gstatic.com/mapspro/images/stock/503-wht-blank_maps.png</href>
+        </Icon>
+        <hotSpot x="32" xunits="pixels" y="64" yunits="insetPixels"/>
+      </IconStyle>
+      <LabelStyle>
+        <scale>1</scale>
+      </LabelStyle>
+    </Style>
+    <StyleMap id="icon-1899-FFD600">
+      <Pair>
+        <key>normal</key>
+        <styleUrl>#icon-1899-FFD600-normal</styleUrl>
+      </Pair>
+      <Pair>
+        <key>highlight</key>
+        <styleUrl>#icon-1899-FFD600-highlight</styleUrl>
+      </Pair>
+    </StyleMap>
+    <Style id="icon-1899-FFEA00-normal">
+      <IconStyle>
+        <color>ff00eaff</color>
+        <scale>1</scale>
+        <Icon>
+          <href>https://www.gstatic.com/mapspro/images/stock/503-wht-blank_maps.png</href>
+        </Icon>
+        <hotSpot x="32" xunits="pixels" y="64" yunits="insetPixels"/>
+      </IconStyle>
+      <LabelStyle>
+        <scale>0</scale>
+      </LabelStyle>
+    </Style>
+    <Style id="icon-1899-FFEA00-highlight">
+      <IconStyle>
+        <color>ff00eaff</color>
+        <scale>1</scale>
+        <Icon>
+          <href>https://www.gstatic.com/mapspro/images/stock/503-wht-blank_maps.png</href>
+        </Icon>
+        <hotSpot x="32" xunits="pixels" y="64" yunits="insetPixels"/>
+      </IconStyle>
+      <LabelStyle>
+        <scale>1</scale>
+      </LabelStyle>
+    </Style>
+    <StyleMap id="icon-1899-FFEA00">
+      <Pair>
+        <key>normal</key>
+        <styleUrl>#icon-1899-FFEA00-normal</styleUrl>
+      </Pair>
+      <Pair>
+        <key>highlight</key>
+        <styleUrl>#icon-1899-FFEA00-highlight</styleUrl>
+      </Pair>
+    </StyleMap>
+    <Placemark>
+      <name>Pookkom</name>
+      <description>bus stop</description>
+      <styleUrl>#icon-1899-FFD600</styleUrl>
+      <Point>
+        <coordinates>
+          75.5700268,11.742983,0
+        </coordinates>
+      </Point>
+    </Placemark>
+    <Placemark>
+      <name>Panniyannur</name>
+      <description>bus stop</description>
+      <styleUrl>#icon-1899-FFEA00</styleUrl>
+      <Point>
+        <coordinates>
+          75.5607349,11.7430584,0
+        </coordinates>
+      </Point>
+    </Placemark>
+    <Placemark>
+      <name>Panniyanur Madappura</name>
+      <description>bus stop</description>
+      <styleUrl>#icon-1899-FFD600</styleUrl>
+      <Point>
+        <coordinates>
+          75.5577276,11.7425836,0
+        </coordinates>
+      </Point>
+    </Placemark>
+    <Placemark>
+      <name>Niram bus stop</name>
+      <description>Bus stop</description>
+      <styleUrl>#icon-1899-FFD600</styleUrl>
+      <Point>
+        <coordinates>
+          75.5545208,11.7424001,0
+        </coordinates>
+      </Point>
+    </Placemark>
+    <Placemark>
+      <name>Vayalilpeedika</name>
+      <description>Bus stop</description>
+      <styleUrl>#icon-1899-FFD600</styleUrl>
+      <Point>
+        <coordinates>
+          75.551471,11.7428579,0
+        </coordinates>
+      </Point>
+    </Placemark>
+    <Placemark>
+      <name>Kararath UP School</name>
+      <description>Bus stop</description>
+      <styleUrl>#icon-1899-FFD600</styleUrl>
+      <Point>
+        <coordinates>
+          75.5497291,11.7425664,0
+        </coordinates>
+      </Point>
+    </Placemark>
+    <Placemark>
+      <name>Nidubram</name>
+      <description>Busstop</description>
+      <styleUrl>#icon-1899-FFD600</styleUrl>
+      <Point>
+        <coordinates>
+          75.5481899,11.742182,0
+        </coordinates>
+      </Point>
+    </Placemark>
+    <Placemark>
+      <name>Vellachery Palli</name>
+      <description>Bus stop</description>
+      <styleUrl>#icon-1899-FFD600</styleUrl>
+      <Point>
+        <coordinates>
+          75.5455057,11.7414428,0
+        </coordinates>
+      </Point>
+    </Placemark>
+    <Placemark>
+      <name>Edayipeedika</name>
+      <description>Bus stop</description>
+      <styleUrl>#icon-1899-FFD600</styleUrl>
+      <Point>
+        <coordinates>
+          75.5423834,11.7418349,0
+        </coordinates>
+      </Point>
+    </Placemark>
+    <Placemark>
+      <name>Kodiyeri Vayashala</name>
+      <description>Bus stop</description>
+      <styleUrl>#icon-1899-FFD600</styleUrl>
+      <Point>
+        <coordinates>
+          75.5393553,11.7413411,0
+        </coordinates>
+      </Point>
+    </Placemark>
+    <Placemark>
+      <name>Priyadarshini Bus stop</name>
+      <description>Bus stop</description>
+      <styleUrl>#icon-1899-FFD600</styleUrl>
+      <Point>
+        <coordinates>
+          75.5342248,11.740458,0
+        </coordinates>
+      </Point>
+    </Placemark>
+    <Placemark>
+      <name>Kallilthazhe bus stop</name>
+      <description>Bus stop</description>
+      <styleUrl>#icon-1899-FFD600</styleUrl>
+      <Point>
+        <coordinates>
+          75.5328826,11.7400738,0
+        </coordinates>
+      </Point>
+    </Placemark>
+    <Placemark>
+      <name>Bus stop 1(kallilthazhe)</name>
+      <description>Bus stop</description>
+      <styleUrl>#icon-1899-FFD600</styleUrl>
+      <Point>
+        <coordinates>
+          75.5314079,11.7390874,0
+        </coordinates>
+      </Point>
+    </Placemark>
+    <Placemark>
+      <name>Poottiya Peedika</name>
+      <description>Bus stop</description>
+      <styleUrl>#icon-1899-FFD600</styleUrl>
+      <Point>
+        <coordinates>
+          75.529897,11.7389606,0
+        </coordinates>
+      </Point>
+    </Placemark>
+    <Placemark>
+      <name>Chandha Peedika</name>
+      <description>Bus stop</description>
+      <styleUrl>#icon-1899-FFD600</styleUrl>
+      <Point>
+        <coordinates>
+          75.5273543,11.7370283,0
+        </coordinates>
+      </Point>
+    </Placemark>
+    <Placemark>
+      <name>Madapeedika Bus Stop</name>
+      <description>Bus stop</description>
+      <styleUrl>#icon-1899-FFD600</styleUrl>
+      <Point>
+        <coordinates>
+          75.5221122,11.7362567,0
+        </coordinates>
+      </Point>
+    </Placemark>
+    <Placemark>
+      <name>Nagaratha peedika</name>
+      <description>Bus stop</description>
+      <styleUrl>#icon-1899-FFD600</styleUrl>
+      <Point>
+        <coordinates>
+          75.5132482,11.7393163,0
+        </coordinates>
+      </Point>
+    </Placemark>
+    <Placemark>
+      <name>Temple Gate Bus stop</name>
+      <description>Bus stop</description>
+      <styleUrl>#icon-1899-FFD600</styleUrl>
+      <Point>
+        <coordinates>
+          75.5099001,11.7392812,0
+        </coordinates>
+      </Point>
+    </Placemark>
+    <Placemark>
+      <name>Manjodi Bus stop</name>
+      <description>Bus stop</description>
+      <styleUrl>#icon-1899-FFD600</styleUrl>
+      <Point>
+        <coordinates>
+          75.5048869,11.7469439,0
+        </coordinates>
+      </Point>
+    </Placemark>
+    <Placemark>
+      <name>KizhathiMukk Bus stop</name>
+      <description>Bus stop</description>
+      <styleUrl>#icon-1899-FFD600</styleUrl>
+      <Point>
+        <coordinates>
+          75.5019907,11.7480932,0
+        </coordinates>
+      </Point>
+    </Placemark>
+    <Placemark>
+      <name>TownHall Bus stop</name>
+      <description>Bus stop</description>
+      <styleUrl>#icon-1899-FFD600</styleUrl>
+      <Point>
+        <coordinates>
+          75.4983818,11.7480535,0
+        </coordinates>
+      </Point>
+    </Placemark>
+    <Placemark>
+      <name>Thalassery Bus stand</name>
+      <description>Bus stand</description>
+      <styleUrl>#icon-1899-FFD600</styleUrl>
+      <Point>
+        <coordinates>
+          75.4942499,11.7497023,0
+        </coordinates>
+      </Point>
+    </Placemark>
+    <Placemark>
+      <name>Panoor Bus stand</name>
+      <description>Bus stand</description>
+      <styleUrl>#icon-1899-FFD600</styleUrl>
+      <Point>
+        <coordinates>
+          75.5791242,11.75661,0
+        </coordinates>
+      </Point>
+    </Placemark>
+  </Document>
+</kml>

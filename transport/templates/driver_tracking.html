@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>K-BUS | GPS Tracking</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<style>
+:root {
+    --primary: #6366f1;
+    --primary-dark: #4f46e5;
+    --secondary: #f59e0b;
+    --success: #10b981;
+    --danger: #ef4444;
+    --warning: #f59e0b;
+    --dark: #1e293b;
+    --light: #f8fafc;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+}
+
+.tracking-card {
+    width: 100%;
+    max-width: 500px;
+    background: rgba(255, 255, 255, 0.98);
+    backdrop-filter: blur(10px);
+    padding: 2.5rem;
+    border-radius: 2rem;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    animation: pulseIn 0.5s ease;
+}
+
+@keyframes pulseIn {
+    from {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.logo {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.logo i {
+    font-size: 3rem;
+    background: linear-gradient(135deg, #6366f1, #f59e0b);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.logo h2 {
+    font-size: 1.75rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, #6366f1 0%, #f59e0b 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-top: 0.5rem;
+}
+
+.status-indicator {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    padding: 1rem;
+    background: #f1f5f9;
+    border-radius: 1.5rem;
+}
+
+.pulse {
+    width: 16px;
+    height: 16px;
+    background: #10b981;
+    border-radius: 50%;
+    position: relative;
+}
+
+.pulse::after {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: #10b981;
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+    opacity: 0.6;
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+        opacity: 0.6;
+    }
+    100% {
+        transform: scale(2);
+        opacity: 0;
+    }
+}
+
+.status-text {
+    font-weight: 600;
+    color: #1e293b;
+}
+
+.status-text i {
+    color: #10b981;
+    margin-right: 0.5rem;
+}
+
+.bus-info {
+    background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+    padding: 1.5rem;
+    border-radius: 1.5rem;
+    margin-bottom: 2rem;
+    text-align: center;
+    border: 2px dashed #6366f1;
+}
+
+.bus-number {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: #6366f1;
+    letter-spacing: 2px;
+    margin-bottom: 0.5rem;
+}
+
+.bus-label {
+    color: #64748b;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.gps-signal {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 2rem;
+    margin-bottom: 2rem;
+}
+
+.signal-bar {
+    display: flex;
+    gap: 0.25rem;
+    align-items: flex-end;
+}
+
+.bar {
+    width: 8px;
+    height: 20px;
+    background: #cbd5e1;
+    border-radius: 4px;
+    transition: all 0.3s ease;
+}
+
+.bar.active {
+    background: linear-gradient(to top, #10b981, #34d399);
+    animation: signal 1s infinite;
+}
+
+.bar:nth-child(1).active { animation-delay: 0s; }
+.bar:nth-child(2).active { animation-delay: 0.1s; height: 30px; }
+.bar:nth-child(3).active { animation-delay: 0.2s; height: 40px; }
+.bar:nth-child(4).active { animation-delay: 0.3s; height: 50px; }
+.bar:nth-child(5).active { animation-delay: 0.4s; height: 60px; }
+
+@keyframes signal {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+.signal-text {
+    font-weight: 600;
+    color: #10b981;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.stat-item {
+    background: white;
+    padding: 1rem;
+    border-radius: 1rem;
+    text-align: center;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.stat-item i {
+    font-size: 1.5rem;
+    color: #6366f1;
+    margin-bottom: 0.5rem;
+}
+
+.stat-label {
+    font-size: 0.8rem;
+    color: #64748b;
+    margin-bottom: 0.25rem;
+}
+
+.stat-value {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #1e293b;
+}
+
+.warning-message {
+    background: #fee2e2;
+    color: #dc2626;
+    padding: 1rem;
+    border-radius: 1rem;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-weight: 500;
+}
+
+.warning-message i {
+    font-size: 1.2rem;
+}
+
+.loading-spinner {
+    display: inline-block;
+    width: 40px;
+    height: 40px;
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #6366f1;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 2rem auto;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.coordinates {
+    background: #1e293b;
+    color: white;
+    padding: 1rem;
+    border-radius: 1rem;
+    font-family: monospace;
+    font-size: 0.9rem;
+    text-align: center;
+    margin-top: 1rem;
+}
+
+.coordinates i {
+    color: #f59e0b;
+    margin-right: 0.5rem;
+}
+
+@media (max-width: 480px) {
+    .tracking-card {
+        padding: 1.5rem;
+    }
+    
+    .bus-number {
+        font-size: 2rem;
+    }
+    
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+</head>
+
+<body data-bus-id="{% if bus %}{{ bus.id }}{% endif %}">
+
+<div class="tracking-card">
+    <div class="logo">
+        <i class="fas fa-satellite-dish"></i>
+        <h2>GPS Tracking</h2>
+    </div>
+
+    <div class="status-indicator">
+        <div class="pulse"></div>
+        <div class="status-text">
+            <i class="fas fa-sync-alt fa-spin"></i>
+            Sending location data
+        </div>
+    </div>
+
+    {% if not bus %}
+        <div class="warning-message">
+            <i class="fas fa-exclamation-triangle"></i>
+            No bus is linked to this driver account.
+        </div>
+    {% else %}
+        <div class="bus-info">
+            <div class="bus-number">{{ bus.vehicle_number }}</div>
+            <div class="bus-label">Active Bus</div>
+        </div>
+
+        <div class="gps-signal">
+            <div class="signal-bar">
+                <div class="bar active"></div>
+                <div class="bar active"></div>
+                <div class="bar active"></div>
+                <div class="bar active"></div>
+                <div class="bar active"></div>
+            </div>
+            <div class="signal-text">
+                <i class="fas fa-wifi"></i>
+                Strong Signal
+            </div>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-item">
+                <i class="fas fa-clock"></i>
+                <div class="stat-label">Update Frequency</div>
+                <div class="stat-value">5 sec</div>
+            </div>
+            <div class="stat-item">
+                <i class="fas fa-globe"></i>
+                <div class="stat-label">GPS Accuracy</div>
+                <div class="stat-value">±3m</div>
+            </div>
+        </div>
+
+        <div style="text-align: center; margin: 1rem 0;">
+            <div class="loading-spinner"></div>
+            <p style="color: #64748b; margin-top: 1rem;">
+                <i class="fas fa-map-pin"></i>
+                Acquiring GPS location...
+            </p>
+        </div>
+
+        <div class="coordinates" id="coordDisplay">
+            <i class="fas fa-map-marker-alt"></i>
+            Waiting for coordinates...
+        </div>
+    {% endif %}
+</div>
+
+<script>
+var bus_id_raw = (document.body.dataset.busId || '').trim();
+var bus_id = bus_id_raw ? parseInt(bus_id_raw, 10) : null;
+
+function sendLocation(position){
+    if(!bus_id){
+        return;
+    }
+    var lat = position.coords.latitude;
+    var lng = position.coords.longitude;
+    var speed = (position.coords.speed == null) ? 0 : position.coords.speed; // m/s
+    
+    // Update coordinates display
+    document.getElementById('coordDisplay').innerHTML = 
+        '<i class="fas fa-map-marker-alt"></i> ' + 
+        lat.toFixed(6) + ', ' + lng.toFixed(6) + 
+        ' <span style="color: #10b981;">(' + (speed * 3.6).toFixed(1) + ' km/h)</span>';
+
+    fetch("/transport/update-location/"+bus_id+"/",{
+        method:"POST",
+        headers:{
+            "Content-Type":"application/x-www-form-urlencoded",
+            "X-CSRFToken": "{{ csrf_token }}"
+        },
+        body:"lat="+lat+"&lng="+lng+"&speed="+speed
+    });
+}
+
+function error(err){
+    console.warn('ERROR(' + err.code + '): ' + err.message);
+    document.getElementById('coordDisplay').innerHTML = 
+        '<i class="fas fa-exclamation-triangle" style="color: #ef4444;"></i> ' +
+        'GPS Error: ' + err.message;
+}
+
+// Start sending location
+if (bus_id && navigator.geolocation) {
+    setInterval(function(){
+        navigator.geolocation.getCurrentPosition(sendLocation, error, {
+            enableHighAccuracy: true,
+            timeout: 5000,
+            maximumAge: 0
+        });
+    }, 5000);
+    
+    // Get initial location
+    navigator.geolocation.getCurrentPosition(sendLocation, error, {
+        enableHighAccuracy: true
+    });
+} else if (!bus_id) {
+    document.getElementById('coordDisplay').innerHTML = 
+        '<i class="fas fa-exclamation-triangle" style="color: #ef4444;"></i> ' +
+        'No bus assigned';
+}
+</script>
+
+</body>
+</html>

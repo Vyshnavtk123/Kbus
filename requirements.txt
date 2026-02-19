@@ -1,0 +1,3 @@
+# Render default build command looks for requirements.txt at repo root.
+# This file delegates to the actual requirements file used by the Django project.
+-r kbus_project/requirements.txt
