@@ -18,11 +18,7 @@ import environ
 import dj_database_url
 
 
-env = environ.Env(
-    DEBUG=(bool, False),
-    DATABASE_URL=(str, ''),
-    CONN_MAX_AGE=(int, 60),
-)
+env = environ.Env()
 environ.Env.read_env()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -42,12 +38,9 @@ if _base_dir_str not in sys.path:
 SECRET_KEY = env('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = env.bool('DEBUG', default=False)
+DEBUG = True
 
-ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=['kbus-1.onrender.com', 'localhost', '127.0.0.1'])
-CSRF_TRUSTED_ORIGINS = env.list('CSRF_TRUSTED_ORIGINS', default=['https://kbus-1.onrender.com'])
-if not DEBUG:
-    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+ALLOWED_HOSTS = ['kbus-1.onrender.com']
 
 AUTH_USER_MODEL = 'transport.User'
 
@@ -74,7 +67,6 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -114,39 +106,32 @@ WSGI_APPLICATION = 'kbus_project.wsgi.application'
 # }
 
 
-_db_from_url = env('DATABASE_URL', default='').strip()
-if _db_from_url:
-    DATABASES = {
-        'default': dj_database_url.parse(
-            _db_from_url,
-            conn_max_age=env.int('CONN_MAX_AGE', default=60),
-            ssl_require=True,
-        )
-    }
-else:
-    DATABASES = {
-        'default': {
-            'ENGINE': env('ENGINE'),
-            'NAME': env('NAME'),
-            'USER': env('USER'),
-            'PASSWORD': env('PASSWORD'),
-            'HOST': env('HOST'),
-            'PORT': env.int('PORT', default=6543),
-            'CONN_MAX_AGE': env.int('CONN_MAX_AGE', default=60),
-            'CONN_HEALTH_CHECKS': True,
-            'OPTIONS': {
-                'sslmode': env('DB_SSLMODE', default='require'),
-            },
-        }
-    }
+DATABASES = {
+
+     'default': {
+         'ENGINE': env('ENGINE'),
+         'NAME': env('NAME'),
+         'USER': env('USER'),
+         'PASSWORD': env('PASSWORD'),
+         'HOST': env('HOST'),
+         'PORT': 6543 ,
+     }
+ }
 
 
 
 REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': [
+    
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+       
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ),
+'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.TokenAuthentication',
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ],
+
+  
 }
 
 
@@ -198,5 +183,3 @@ STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'transport/static')
 ]
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles/')
-
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
