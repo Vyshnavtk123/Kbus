@@ -835,11 +835,29 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 
 var routeClick = 0;
 
-var routeLayer = omnivore.kml("{% static 'maps/K-BUS Route.kml' %}")
+var routeGeoJson = L.geoJson(null, {
+    pointToLayer: function(feature, latlng){
+        // Force points (stops) to render as standard Leaflet markers.
+        return L.marker(latlng);
+    }
+});
+
+var routeLayer = omnivore.kml("{% static 'maps/K-BUS Route.kml' %}", null, routeGeoJson)
 .on('ready', function(){
-    routeMap.fitBounds(routeLayer.getBounds());
+    try {
+        var b = routeLayer.getBounds();
+        if (b && b.isValid && b.isValid()) {
+            routeMap.fitBounds(b);
+        }
+    } catch (e) {
+        // ignore fit errors
+    }
+
     routeLayer.eachLayer(function(l){
         var name = l.feature.properties.name || "Stop";
+        if (l instanceof L.Marker) {
+            try { l.setIcon(new L.Icon.Default()); } catch (e) {}
+        }
         l.bindPopup(`
             <div style="font-family: 'Inter', sans-serif; padding: 5px;">
                 <strong style="color: var(--primary);">${name}</strong>
@@ -861,7 +879,11 @@ var routeLayer = omnivore.kml("{% static 'maps/K-BUS Route.kml' %}")
             }
         });
     });
-}).addTo(routeMap);
+})
+.on('error', function(e){
+    console.error('KML load failed (routeLayer):', e);
+})
+.addTo(routeMap);
 
 /* STOP MAP */
 var stopMap = L.map('stop_map').setView([11.75,75.57],12);
@@ -869,11 +891,28 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '© OpenStreetMap contributors'
 }).addTo(stopMap);
 
-var stopLayer = omnivore.kml("{% static 'maps/K-BUS Route.kml' %}")
+var stopGeoJson = L.geoJson(null, {
+    pointToLayer: function(feature, latlng){
+        return L.marker(latlng);
+    }
+});
+
+var stopLayer = omnivore.kml("{% static 'maps/K-BUS Route.kml' %}", null, stopGeoJson)
 .on('ready', function(){
-    stopMap.fitBounds(stopLayer.getBounds());
+    try {
+        var b = stopLayer.getBounds();
+        if (b && b.isValid && b.isValid()) {
+            stopMap.fitBounds(b);
+        }
+    } catch (e) {
+        // ignore fit errors
+    }
+
     stopLayer.eachLayer(function(l){
         var name = l.feature.properties.name || "Stop";
+        if (l instanceof L.Marker) {
+            try { l.setIcon(new L.Icon.Default()); } catch (e) {}
+        }
         l.bindPopup(`
             <div style="font-family: 'Inter', sans-serif; padding: 5px;">
                 <strong style="color: var(--primary);">${name}</strong>
@@ -887,7 +926,11 @@ var stopLayer = omnivore.kml("{% static 'maps/K-BUS Route.kml' %}")
             document.getElementById("lng").value=e.latlng.lng;
         });
     });
-}).addTo(stopMap);
+})
+.on('error', function(e){
+    console.error('KML load failed (stopLayer):', e);
+})
+.addTo(stopMap);
 </script>
 
 </body>
