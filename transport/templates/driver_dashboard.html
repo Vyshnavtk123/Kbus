@@ -638,6 +638,20 @@ small {
 
 <script>
 (function(){
+    // Ensure Leaflet's default marker icons load correctly (prevents "invisible" markers
+    // when marker PNG assets can't be resolved).
+    try {
+        if (window.L && L.Icon && L.Icon.Default) {
+            L.Icon.Default.mergeOptions({
+                iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
+                iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
+                shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+            });
+        }
+    } catch (e) {
+        // no-op
+    }
+
     var busIdRaw = (document.body.dataset.busId || '').trim();
     var busId = busIdRaw ? parseInt(busIdRaw, 10) : null;
     var tripActive = (document.body.dataset.tripActive || '0') === '1';
