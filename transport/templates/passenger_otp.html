@@ -602,6 +602,85 @@ var KBUS_YELLOW_ICON = L.icon({
     popupAnchor: [0, -42],
 });
 
+function __kbusHexToRgb(hex){
+    if(!hex){return null;}
+    var h = String(hex).trim();
+    if(h[0] === '#') h = h.slice(1);
+    if(h.length !== 6) return null;
+    var n = parseInt(h, 16);
+    if(!isFinite(n)) return null;
+    return { r: (n >> 16) & 255, g: (n >> 8) & 255, b: n & 255 };
+}
+
+function __kbusRgbToHex(rgb){
+    function p(v){
+        var s = Math.max(0, Math.min(255, v|0)).toString(16);
+        return (s.length === 1) ? ('0' + s) : s;
+    }
+    return '#' + p(rgb.r) + p(rgb.g) + p(rgb.b);
+}
+
+function __kbusDarkenHex(hex, amount){
+    var rgb = __kbusHexToRgb(hex);
+    if(!rgb){return null;}
+    var a = Number(amount);
+    if(!isFinite(a)) a = 40;
+    return __kbusRgbToHex({ r: rgb.r - a, g: rgb.g - a, b: rgb.b - a });
+}
+
+function __kbusKmlFillFromStyleUrl(feature){
+    try{
+        var styleUrl = feature && feature.properties && feature.properties.styleUrl;
+        if(typeof styleUrl !== 'string') return null;
+        var m = styleUrl.match(/-([0-9A-Fa-f]{6})$/);
+        return m ? ('#' + m[1]) : null;
+    }catch(e){
+        return null;
+    }
+}
+
+var __kbusPinIconCache = {};
+function __kbusPinIcon(fillHex){
+    var key = String(fillHex || '').toLowerCase();
+    if(__kbusPinIconCache[key]) return __kbusPinIconCache[key];
+    var strokeHex = __kbusDarkenHex(fillHex, 70) || '#b45309';
+    var svg = (
+        '<svg xmlns="http://www.w3.org/2000/svg" width="30" height="45" viewBox="0 0 30 45">'
+        + '<path d="M15 44.5C15 44.5 27.5 29.8 27.5 15.4C27.5 6.9 21.9 0.5 15 0.5C8.1 0.5 2.5 6.9 2.5 15.4C2.5 29.8 15 44.5 15 44.5Z" fill="' + fillHex + '" stroke="' + strokeHex + '" stroke-width="1.5"/>'
+        + '<circle cx="15" cy="15.5" r="6.2" fill="#ffffff" opacity="0.95"/>'
+        + '</svg>'
+    );
+    var icon = L.icon({
+        iconUrl: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(svg),
+        iconSize: [30, 45],
+        iconAnchor: [15, 45],
+        popupAnchor: [0, -42],
+    });
+    __kbusPinIconCache[key] = icon;
+    return icon;
+}
+
+function __kbusKmlIconForFeature(feature){
+    var fill = __kbusKmlFillFromStyleUrl(feature);
+    if(fill){
+        return __kbusPinIcon(fill);
+    }
+    try{
+        var href = feature && feature.properties && feature.properties.icon;
+        if(typeof href === 'string' && href){
+            return L.icon({
+                iconUrl: href,
+                iconSize: [32, 32],
+                iconAnchor: [16, 32],
+                popupAnchor: [0, -28],
+            });
+        }
+    }catch(e){
+        // ignore
+    }
+    return KBUS_YELLOW_ICON;
+}
+
 // Ensure Leaflet's default marker icons load correctly (prevents "invisible" markers
 // when marker PNG assets can't be resolved).
 try {
@@ -625,7 +704,13 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 
 // Load the same custom KML route layer used in the admin maps
 try{
-    var trackLayer = omnivore.kml("{% url 'kbus_route_kml' %}")
+    var __kbusKmlGeoJson = L.geoJson(null, {
+        pointToLayer: function(feature, latlng){
+            return L.marker(latlng, { icon: __kbusKmlIconForFeature(feature) });
+        }
+    });
+
+    var trackLayer = omnivore.kml("{% url 'kbus_route_kml' %}", null, __kbusKmlGeoJson)
     .on('ready', function(){
         if(!window.__kbusTrackFitted){
             window.__kbusTrackFitted = true;
