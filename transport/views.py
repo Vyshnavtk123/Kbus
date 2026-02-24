@@ -189,7 +189,15 @@ def _to_decimal(value, *, min_value: Decimal | None = None):
 
 
 def kbus_view(request):
-    return render(request, 'kbus.html')
+    if not request.user.is_authenticated:
+        return redirect('login')
+
+    role = getattr(request.user, 'role', None)
+    if role == 'admin':
+        return redirect('admin_dashboard')
+    if role == 'driver':
+        return redirect('driver_dashboard')
+    return redirect('passenger')
 
 
 def register_view(request):
