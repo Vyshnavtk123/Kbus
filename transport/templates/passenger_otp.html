@@ -612,7 +612,7 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 
 // Load the same custom KML route layer used in the admin maps
 try{
-    var trackLayer = omnivore.kml("{% static 'maps/K-BUS Route.kml' %}")
+    var trackLayer = omnivore.kml("{% url 'kbus_route_kml' %}")
     .on('ready', function(){
         if(!window.__kbusTrackFitted){
             window.__kbusTrackFitted = true;

@@ -842,7 +842,7 @@ var routeGeoJson = L.geoJson(null, {
     }
 });
 
-var routeLayer = omnivore.kml("{% static 'maps/K-BUS Route.kml' %}", null, routeGeoJson)
+var routeLayer = omnivore.kml("{% url 'kbus_route_kml' %}", null, routeGeoJson)
 .on('ready', function(){
     try {
         var b = routeLayer.getBounds();
@@ -897,7 +897,7 @@ var stopGeoJson = L.geoJson(null, {
     }
 });
 
-var stopLayer = omnivore.kml("{% static 'maps/K-BUS Route.kml' %}", null, stopGeoJson)
+var stopLayer = omnivore.kml("{% url 'kbus_route_kml' %}", null, stopGeoJson)
 .on('ready', function(){
     try {
         var b = stopLayer.getBounds();

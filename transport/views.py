@@ -8,11 +8,13 @@ from datetime import timedelta
 from django.contrib import messages
 from django.contrib.auth import authenticate, get_user_model, login
 from django.contrib.auth.decorators import login_required
+from django.contrib.staticfiles import finders
 from django.db.models import Sum
-from django.http import JsonResponse
+from django.http import Http404, HttpResponse, JsonResponse
 from django.shortcuts import redirect, render
 from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_GET
 
 from .models import (
     Bus,
@@ -24,6 +26,26 @@ from .models import (
     Stop,
     Ticket,
 )
+
+
+@require_GET
+def kbus_route_kml(request):
+    """Serve the route KML from installed static sources.
+
+    This avoids deployment issues where `/static/...` isn't available (e.g. collectstatic
+    not running or static hosting misconfigured), which would make map stop markers vanish.
+    """
+
+    kml_path = finders.find('maps/K-BUS Route.kml')
+    if not kml_path:
+        raise Http404('KML not found')
+
+    with open(kml_path, 'rb') as f:
+        content = f.read()
+
+    resp = HttpResponse(content, content_type='application/vnd.google-earth.kml+xml; charset=utf-8')
+    resp['Cache-Control'] = 'public, max-age=3600'
+    return resp
 
 
 def distance_meters(lat1, lon1, lat2, lon2):
