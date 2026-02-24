@@ -806,8 +806,14 @@ function showSection(id){
 {% load static %}
 
 <script>
+var __kbusYellowSvg = (
+    '<svg xmlns="http://www.w3.org/2000/svg" width="30" height="45" viewBox="0 0 30 45">'
+    + '<path d="M15 44.5C15 44.5 27.5 29.8 27.5 15.4C27.5 6.9 21.9 0.5 15 0.5C8.1 0.5 2.5 6.9 2.5 15.4C2.5 29.8 15 44.5 15 44.5Z" fill="#f59e0b" stroke="#b45309" stroke-width="1.5"/>'
+    + '<circle cx="15" cy="15.5" r="6.2" fill="#ffffff" opacity="0.95"/>'
+    + '</svg>'
+);
 var KBUS_YELLOW_ICON = L.icon({
-    iconUrl: "{% static 'img/marker-yellow.svg' %}",
+    iconUrl: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(__kbusYellowSvg),
     iconSize: [30, 45],
     iconAnchor: [15, 45],
     popupAnchor: [0, -42],
