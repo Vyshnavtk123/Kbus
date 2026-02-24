@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import math
+import re
 from decimal import Decimal, ROUND_CEILING
 from datetime import timedelta
 
@@ -154,6 +155,20 @@ def _fare_from_distance_m(distance_m: float) -> Decimal:
 User = get_user_model()
 
 
+_OTP_RE = re.compile(r'^[A-Z0-9]{5}$')
+
+
+def _normalize_bus_otp(value) -> str | None:
+    if value is None:
+        return None
+    otp = str(value).strip().upper()
+    if not otp:
+        return None
+    if not _OTP_RE.fullmatch(otp):
+        return None
+    return otp
+
+
 def _to_int(value, *, min_value: int | None = None, max_value: int | None = None):
     try:
         i = int(str(value).strip())
@@ -246,8 +261,14 @@ def passenger_otp_view(request):
 
 @login_required
 def validate_bus_otp(request, otp=None):
+    otp_from_url = (request.method == 'GET' and otp is not None)
     if request.method == 'POST':
-        otp = (request.POST.get('otp') or '').strip()
+        otp = request.POST.get('otp')
+
+    otp = _normalize_bus_otp(otp)
+
+    if otp_from_url and not otp:
+        return JsonResponse({'valid': False, 'error': 'Invalid OTP'}, status=400)
 
     if not otp:
         messages.error(request, 'Enter OTP')
@@ -268,6 +289,11 @@ def validate_bus_otp(request, otp=None):
 
 @login_required
 def passenger_select(request, otp):
+    otp = _normalize_bus_otp(otp)
+    if not otp:
+        messages.error(request, 'Invalid OTP')
+        return redirect('passenger')
+
     bus = Bus.objects.filter(otp_code=otp).first()
     if not bus:
         messages.error(request, 'Invalid OTP')
@@ -281,11 +307,15 @@ def bus_ticket(request):
     if request.method != 'POST':
         return redirect('passenger')
 
-    otp = (request.POST.get('otp') or '').strip()
+    otp = _normalize_bus_otp(request.POST.get('otp'))
     source = (request.POST.get('source') or '').strip()
     destination = (request.POST.get('destination') or '').strip()
 
-    if not (otp and source and destination):
+    if not otp:
+        messages.error(request, 'Invalid OTP')
+        return redirect('passenger')
+
+    if not (source and destination):
         messages.error(request, 'Please select source and destination')
         return redirect('passenger')
 
@@ -295,8 +325,10 @@ def bus_ticket(request):
         return redirect('passenger')
 
     stops = Stop.objects.filter(route=bus.route)
-    source_stop = stops.filter(id=int(source)).first() if source.isdigit() else stops.filter(name=source).first()
-    dest_stop = stops.filter(id=int(destination)).first() if destination.isdigit() else stops.filter(name=destination).first()
+    source_id = _to_int(source, min_value=1)
+    dest_id = _to_int(destination, min_value=1)
+    source_stop = stops.filter(id=source_id).first() if source_id else stops.filter(name=source).order_by('order', 'id').first()
+    dest_stop = stops.filter(id=dest_id).first() if dest_id else stops.filter(name=destination).order_by('order', 'id').first()
 
     if not source_stop or not dest_stop:
         messages.error(request, 'Stop not found')
@@ -510,6 +542,10 @@ def assign_driver_bus(request):
 
 def get_stops_by_otp(request, otp):
     try:
+        otp = _normalize_bus_otp(otp)
+        if not otp:
+            return JsonResponse({'error': 'Invalid OTP'}, status=400)
+
         bus = Bus.objects.get(otp_code=otp)
         stops = Stop.objects.filter(route=bus.route).order_by('order')
 
@@ -529,7 +565,7 @@ def get_stops_by_otp(request, otp):
             'stops': stop_list,
         })
     except Bus.DoesNotExist:
-        return JsonResponse({'error': 'Invalid OTP'})
+        return JsonResponse({'error': 'Invalid OTP'}, status=400)
 
 
 @csrf_exempt
@@ -537,11 +573,14 @@ def calculate_fare(request):
     if request.method != 'POST':
         return JsonResponse({'error': 'Method not allowed'}, status=405)
 
-    otp = (request.POST.get('otp') or '').strip()
+    otp = _normalize_bus_otp(request.POST.get('otp'))
     source = (request.POST.get('source') or '').strip()
     destination = (request.POST.get('destination') or '').strip()
 
-    if not (otp and source and destination):
+    if not otp:
+        return JsonResponse({'error': 'Invalid OTP'}, status=400)
+
+    if not (source and destination):
         return JsonResponse({'error': 'Missing fields'}, status=400)
 
     bus = Bus.objects.filter(otp_code=otp).first()
@@ -550,8 +589,10 @@ def calculate_fare(request):
 
     stops = Stop.objects.filter(route=bus.route)
 
-    source_stop = stops.filter(id=int(source)).first() if source.isdigit() else stops.filter(name=source).order_by('order', 'id').first()
-    dest_stop = stops.filter(id=int(destination)).first() if destination.isdigit() else stops.filter(name=destination).order_by('order', 'id').first()
+    source_id = _to_int(source, min_value=1)
+    dest_id = _to_int(destination, min_value=1)
+    source_stop = stops.filter(id=source_id).first() if source_id else stops.filter(name=source).order_by('order', 'id').first()
+    dest_stop = stops.filter(id=dest_id).first() if dest_id else stops.filter(name=destination).order_by('order', 'id').first()
 
     if not source_stop or not dest_stop:
         return JsonResponse({'error': 'Stop not found'}, status=400)

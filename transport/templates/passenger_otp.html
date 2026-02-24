@@ -555,7 +555,7 @@ function showSection(id){
             {% csrf_token %}
             <div class="otp-input-wrapper">
                 <i class="fas fa-key"></i>
-                <input type="text" name="otp" placeholder="Enter 6-digit OTP" maxlength="6">
+                <input type="text" name="otp" placeholder="Enter 5-character OTP" maxlength="5">
             </div>
             <button type="submit" class="submit">
                 <i class="fas fa-arrow-right"></i>
@@ -575,7 +575,7 @@ function showSection(id){
     
     <div class="tracking-controls">
         <div class="track-input-group">
-            <input type="text" id="trackOtp" placeholder="Enter Bus OTP" maxlength="6">
+            <input type="text" id="trackOtp" placeholder="Enter Bus OTP" maxlength="5">
             <button onclick="trackBus()">
                 <i class="fas fa-search"></i> TRACK
             </button>
