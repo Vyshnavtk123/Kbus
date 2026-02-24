@@ -589,6 +589,13 @@ function showSection(id){
 </div>
 
 <script>
+var KBUS_YELLOW_ICON = L.icon({
+    iconUrl: "{% static 'img/marker-yellow.svg' %}",
+    iconSize: [30, 45],
+    iconAnchor: [15, 45],
+    popupAnchor: [0, -42],
+});
+
 // Ensure Leaflet's default marker icons load correctly (prevents "invisible" markers
 // when marker PNG assets can't be resolved).
 try {
@@ -663,7 +670,7 @@ function trackBus(){
                             if(marker){
                                 marker.setLatLng([data.lat, data.lng]);
                             }else{
-                                marker = L.marker([data.lat, data.lng]).addTo(map);
+                                marker = L.marker([data.lat, data.lng], { icon: KBUS_YELLOW_ICON }).addTo(map);
                             }
                             map.panTo([data.lat, data.lng]);
 

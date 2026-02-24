@@ -806,6 +806,13 @@ function showSection(id){
 {% load static %}
 
 <script>
+var KBUS_YELLOW_ICON = L.icon({
+    iconUrl: "{% static 'img/marker-yellow.svg' %}",
+    iconSize: [30, 45],
+    iconAnchor: [15, 45],
+    popupAnchor: [0, -42],
+});
+
 // Ensure Leaflet's default marker icons load correctly (prevents "invisible" markers
 // when marker PNG assets can't be resolved).
 try {
@@ -838,7 +845,7 @@ var routeClick = 0;
 var routeGeoJson = L.geoJson(null, {
     pointToLayer: function(feature, latlng){
         // Force points (stops) to render as standard Leaflet markers.
-        return L.marker(latlng);
+        return L.marker(latlng, { icon: KBUS_YELLOW_ICON });
     }
 });
 
@@ -893,7 +900,7 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 
 var stopGeoJson = L.geoJson(null, {
     pointToLayer: function(feature, latlng){
-        return L.marker(latlng);
+        return L.marker(latlng, { icon: KBUS_YELLOW_ICON });
     }
 });
 
