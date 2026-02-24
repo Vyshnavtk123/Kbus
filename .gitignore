@@ -20,6 +20,9 @@ db.sqlite3
 db.sqlite3-journal
 media/
 
+# collectstatic output
+staticfiles/
+
 
 # Django migrations cache
 **/migrations/__pycache__/
