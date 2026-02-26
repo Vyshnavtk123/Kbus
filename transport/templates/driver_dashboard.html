@@ -440,8 +440,8 @@ small {
         </div>
     {% else %}
         <div class="btn-group" style="margin-bottom: 1.5rem;">
-            <button class="btn btn-outline active" id="tabLive"><i class="fas fa-play-circle"></i>LIVE PANEL</button>
-            <button class="btn btn-outline" id="tabTrips"><i class="fas fa-history"></i>TRIP DETAILS</button>
+            <button type="button" class="btn btn-outline active" id="tabLive"><i class="fas fa-play-circle"></i>LIVE PANEL</button>
+            <button type="button" class="btn btn-outline" id="tabTrips"><i class="fas fa-history"></i>TRIP DETAILS</button>
         </div>
 
         <div id="livePanel">
@@ -562,7 +562,7 @@ small {
                                     {% endif %}
                                 </td>
                                 <td>
-                                    <button class="btn viewTripBtn" style="padding: 0.5rem 1rem;" data-trip-id="{{ tr.id }}">
+                                    <button type="button" class="btn viewTripBtn" style="padding: 0.5rem 1rem;" data-trip-id="{{ tr.id }}">
                                         <i class="fas fa-eye"></i> VIEW
                                     </button>
                                 </td>
@@ -912,7 +912,18 @@ small {
                 showTab('trips');
             })
             .catch(function(){
-                // ignore
+                var bodyEl = document.getElementById('historyTicketsBody');
+                var totalEl = document.getElementById('historyTotal');
+                var metaEl = document.getElementById('tripMeta');
+                if(bodyEl){
+                    bodyEl.innerHTML = '<tr><td colspan="5" class="no-data"><i class="fas fa-exclamation-circle"></i><p>Network error while loading trip</p></td></tr>';
+                }
+                if(totalEl){
+                    totalEl.innerText = '₹0';
+                }
+                if(metaEl){
+                    metaEl.innerHTML = '';
+                }
             });
     };
 
@@ -936,8 +947,12 @@ small {
 
     // Trip view buttons
     Array.prototype.forEach.call(document.querySelectorAll('.viewTripBtn'), function(btn){
-        btn.addEventListener('click', function(){
-            var tripId = btn.getAttribute('data-trip-id');
+        btn.addEventListener('click', function(e){
+            if(e && e.preventDefault){
+                e.preventDefault();
+                e.stopPropagation();
+            }
+            var tripId = (btn.getAttribute('data-trip-id') || '').trim();
             if(tripId){
                 loadTrip(tripId);
             }
