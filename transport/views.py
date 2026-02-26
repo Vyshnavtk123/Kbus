@@ -7,7 +7,7 @@ from decimal import Decimal, ROUND_CEILING
 from datetime import timedelta
 
 from django.contrib import messages
-from django.contrib.auth import authenticate, get_user_model, login
+from django.contrib.auth import authenticate, get_user_model, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.staticfiles import finders
 from django.db.models import Sum
@@ -15,7 +15,7 @@ from django.http import Http404, HttpResponse, JsonResponse
 from django.shortcuts import redirect, render
 from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
-from django.views.decorators.http import require_GET
+from django.views.decorators.http import require_GET, require_http_methods
 
 from .models import (
     Bus,
@@ -247,6 +247,12 @@ def login_view(request):
             return redirect('driver_dashboard')
         return redirect('passenger')
     return render(request, 'login.html')
+
+
+@require_http_methods(["GET", "POST"])
+def logout_view(request):
+    logout(request)
+    return redirect('login')
 
 
 @login_required

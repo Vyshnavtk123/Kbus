@@ -23,6 +23,7 @@ urlpatterns = [
     path('my-tickets/<int:user_id>/', my_tickets),
     path('register/', register_view, name='register'),
     path('login/', login_view, name='login'),
+    path('logout/', logout_view, name='logout'),
     path('kbus/', kbus_view, name='kbus'),
     path('route-kml/', kbus_route_kml, name='kbus_route_kml'),
     path('select/<str:otp>/', passenger_select, name='passenger_select'),

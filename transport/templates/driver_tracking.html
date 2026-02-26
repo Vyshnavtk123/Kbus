@@ -34,6 +34,32 @@ body {
     padding: 1rem;
 }
 
+.top-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.25rem;
+}
+
+.top-actions a,
+.top-actions button {
+    border: none;
+    background: transparent;
+    font-weight: 700;
+    cursor: pointer;
+    color: var(--primary);
+    font-size: 0.95rem;
+}
+
+.top-actions a {
+    text-decoration: none;
+}
+
+.top-actions button {
+    color: var(--danger);
+}
+
 .tracking-card {
     width: 100%;
     max-width: 500px;
@@ -296,6 +322,10 @@ body {
 <body data-bus-id="{% if bus %}{{ bus.id }}{% endif %}">
 
 <div class="tracking-card">
+    <div class="top-actions">
+        <a href="{% url 'driver_dashboard' %}"><i class="fas fa-arrow-left" style="margin-right: 6px;"></i>Back</a>
+        <button type="button" onclick="window.location.href='{% url 'logout' %}'"><i class="fas fa-sign-out-alt" style="margin-right: 6px;"></i>Logout</button>
+    </div>
     <div class="logo">
         <i class="fas fa-satellite-dish"></i>
         <h2>GPS Tracking</h2>
