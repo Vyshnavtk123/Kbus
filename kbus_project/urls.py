@@ -16,8 +16,12 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from django.views.generic import RedirectView
 
 urlpatterns = [
+    path('', RedirectView.as_view(url='/transport/login/', permanent=False)),
+    path('login/', RedirectView.as_view(url='/transport/login/', permanent=False)),
+    path('logout/', RedirectView.as_view(url='/transport/logout/', permanent=False)),
     path('admin/', admin.site.urls),
     path('transport/', include('transport.urls')),
 ]
