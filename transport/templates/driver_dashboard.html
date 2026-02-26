@@ -683,34 +683,39 @@ small {
     var busId = busIdRaw ? parseInt(busIdRaw, 10) : null;
     var tripActive = (document.body.dataset.tripActive || '0') === '1';
 
-    if(!busId){
-        return;
+    // NOTE: Trip history VIEW does not require busId.
+    // Only map/live polling requires a valid numeric busId.
+    var busIdOk = (typeof busId === 'number' && !isNaN(busId));
+
+    var map = null;
+    if(busIdOk){
+        map = L.map('driver_map').setView([11.75,75.57],13);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
     }
 
-    var map = L.map('driver_map').setView([11.75,75.57],13);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '© OpenStreetMap contributors'
-    }).addTo(map);
-
     // Overlay your custom K-BUS route map (KML)
-    try{
-        var __kbusRouteGeoJson = L.geoJson(null, {
-            pointToLayer: function(feature, latlng){
-                return L.marker(latlng, { icon: KBUS_YELLOW_ICON });
-            }
-        });
+    if(busIdOk && map){
+        try{
+            var __kbusRouteGeoJson = L.geoJson(null, {
+                pointToLayer: function(feature, latlng){
+                    return L.marker(latlng, { icon: KBUS_YELLOW_ICON });
+                }
+            });
 
-        var __kbusRouteLayer = omnivore.kml("{% url 'kbus_route_kml' %}", null, __kbusRouteGeoJson)
-        .on('ready', function(){
-            // Fit once so route is visible even before GPS updates
-            if(!window.__kbusDriverRouteFitted){
-                window.__kbusDriverRouteFitted = true;
-                try{ map.fitBounds(__kbusRouteLayer.getBounds()); }catch(e){}
-            }
-        })
-        .addTo(map);
-    }catch(e){
-        // If omnivore fails to load, base map still works
+            var __kbusRouteLayer = omnivore.kml("{% url 'kbus_route_kml' %}", null, __kbusRouteGeoJson)
+            .on('ready', function(){
+                // Fit once so route is visible even before GPS updates
+                if(!window.__kbusDriverRouteFitted){
+                    window.__kbusDriverRouteFitted = true;
+                    try{ map.fitBounds(__kbusRouteLayer.getBounds()); }catch(e){}
+                }
+            })
+            .addTo(map);
+        }catch(e){
+            // If omnivore fails to load, base map still works
+        }
     }
 
     var marker;
@@ -747,6 +752,9 @@ small {
     }
 
     function pollLocation(){
+        if(!busIdOk || !map){
+            return;
+        }
         fetch('/transport/bus-location/' + busId + '/')
             .then(function(res){ return res.json(); })
             .then(function(data){
@@ -766,6 +774,9 @@ small {
     }
 
     function sendLocation(position){
+        if(!busIdOk || !map){
+            return;
+        }
         if(!tripActive){
             return;
         }
@@ -798,6 +809,9 @@ small {
     }
 
     function pollTrip(){
+        if(!busIdOk){
+            return;
+        }
         if(!tripActive){
             return;
         }
@@ -927,14 +941,6 @@ small {
             });
     };
 
-    // Always poll location so driver sees live location even before starting trip
-    pollLocation();
-    setInterval(pollLocation, 5000);
-
-    // Auto-refresh trip tickets and total
-    pollTrip();
-    setInterval(pollTrip, 5000);
-
     // Tabs
     var tabLiveBtn = document.getElementById('tabLive');
     var tabTripsBtn = document.getElementById('tabTrips');
@@ -954,16 +960,26 @@ small {
             }
             var tripId = (btn.getAttribute('data-trip-id') || '').trim();
             if(tripId){
-                loadTrip(tripId);
+                window.loadTrip(tripId);
             }
         });
     });
 
-    // Start GPS sending only during active trip
-    if(tripActive && navigator.geolocation){
-        setInterval(function(){
-            navigator.geolocation.getCurrentPosition(sendLocation, geoError);
-        }, 5000);
+    if(busIdOk){
+        // Always poll location so driver sees live location even before starting trip
+        pollLocation();
+        setInterval(pollLocation, 5000);
+
+        // Auto-refresh trip tickets and total
+        pollTrip();
+        setInterval(pollTrip, 5000);
+
+        // Start GPS sending only during active trip
+        if(tripActive && navigator.geolocation){
+            setInterval(function(){
+                navigator.geolocation.getCurrentPosition(sendLocation, geoError);
+            }, 5000);
+        }
     }
 })();
 </script>
