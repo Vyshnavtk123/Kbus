@@ -38,9 +38,25 @@ if _base_dir_str not in sys.path:
 SECRET_KEY = env('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+# Render sets env vars; default to safe production behavior.
+DEBUG = env.bool('DEBUG', default=False)
 
-ALLOWED_HOSTS = ['kbus-1.onrender.com']
+# Allow Render hostnames + local dev by default.
+# You can override via env var: ALLOWED_HOSTS=kbus-1.onrender.com,custom.domain
+ALLOWED_HOSTS = env.list(
+    'ALLOWED_HOSTS',
+    default=['kbus-1.onrender.com', 'localhost', '127.0.0.1', '.onrender.com'],
+)
+
+# If you serve the site over HTTPS behind a proxy (Render), Django needs this
+# for correct scheme detection (affects CSRF/origin checks).
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+# For HTTPS POSTs (like login) on Render/custom domains.
+CSRF_TRUSTED_ORIGINS = env.list(
+    'CSRF_TRUSTED_ORIGINS',
+    default=['https://kbus-1.onrender.com', 'https://*.onrender.com'],
+)
 
 AUTH_USER_MODEL = 'transport.User'
 
