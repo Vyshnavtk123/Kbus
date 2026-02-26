@@ -651,19 +651,141 @@ small {
 
 <script>
 (function(){
-    var __kbusYellowSvg = (
-        '<svg xmlns="http://www.w3.org/2000/svg" width="30" height="45" viewBox="0 0 30 45">'
-        + '<path d="M15 44.5C15 44.5 27.5 29.8 27.5 15.4C27.5 6.9 21.9 0.5 15 0.5C8.1 0.5 2.5 6.9 2.5 15.4C2.5 29.8 15 44.5 15 44.5Z" fill="#f59e0b" stroke="#b45309" stroke-width="1.5"/>'
-        + '<circle cx="15" cy="15.5" r="6.2" fill="#ffffff" opacity="0.95"/>'
-        + '</svg>'
-    );
-    // Note: keep icon embedded so it works even if /static isn't served.
-    var KBUS_YELLOW_ICON = L.icon({
-        iconUrl: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(__kbusYellowSvg),
-        iconSize: [30, 45],
-        iconAnchor: [15, 45],
-        popupAnchor: [0, -42],
-    });
+    // -----------------------------
+    // Trip VIEW utilities (must work even if Leaflet/CDNs fail)
+    // -----------------------------
+    function setTripError(message){
+        var bodyEl = document.getElementById('historyTicketsBody');
+        var totalEl = document.getElementById('historyTotal');
+        var metaEl = document.getElementById('tripMeta');
+        if(bodyEl){
+            bodyEl.innerHTML = '<tr><td colspan="5" class="no-data"><i class="fas fa-exclamation-circle"></i><p>' + String(message || 'Unable to load trip') + '</p></td></tr>';
+        }
+        if(totalEl){
+            totalEl.innerText = '₹0';
+        }
+        if(metaEl){
+            metaEl.innerHTML = '';
+        }
+    }
+
+    function parseJsonResponse(res){
+        // Handles cases where backend returns HTML (login redirect) or plain text.
+        var ct = (res && res.headers && res.headers.get) ? (res.headers.get('content-type') || '') : '';
+        if(ct.indexOf('application/json') !== -1){
+            return res.json();
+        }
+        return res.text().then(function(txt){
+            return {
+                __nonJson: true,
+                status: res.status,
+                statusText: res.statusText,
+                text: txt
+            };
+        });
+    }
+
+    window.loadTrip = function(tripId){
+        // Immediate UI feedback
+        var bodyEl = document.getElementById('historyTicketsBody');
+        if(bodyEl){
+            bodyEl.innerHTML = '<tr><td colspan="5" class="no-data"><i class="fas fa-spinner fa-spin"></i><p>Loading trip…</p></td></tr>';
+        }
+
+        fetch('/transport/driver-trip/' + encodeURIComponent(tripId) + '/')
+            .then(function(res){
+                return parseJsonResponse(res).then(function(data){
+                    return { res: res, data: data };
+                });
+            })
+            .then(function(r){
+                var res = r.res;
+                var data = r.data;
+
+                if(data && data.__nonJson){
+                    if(res.status === 302 || res.status === 301 || res.status === 0){
+                        setTripError('Session expired. Please login again.');
+                    } else {
+                        setTripError('Server returned non-JSON response (HTTP ' + res.status + ').');
+                    }
+                    return;
+                }
+
+                if(!res.ok){
+                    var msg = (data && data.error) ? data.error : ('HTTP ' + res.status);
+                    setTripError(msg);
+                    return;
+                }
+
+                var totalEl = document.getElementById('historyTotal');
+                var metaEl = document.getElementById('tripMeta');
+                var bodyEl2 = document.getElementById('historyTicketsBody');
+                if(!bodyEl2 || !totalEl || !metaEl){
+                    return;
+                }
+
+                if(data && data.error){
+                    setTripError(data.error);
+                    return;
+                }
+
+                var startText = data.start_time ? new Date(data.start_time).toLocaleString() : '';
+                var endText = data.end_time ? new Date(data.end_time).toLocaleString() : 'Active';
+                metaEl.innerHTML = (
+                    '<div class="info-item">'
+                    + '<span class="info-label">Trip #' + String(data.trip_id || '') + '</span>'
+                    + '<span class="info-value">' + startText + ' - ' + endText + '</span>'
+                    + '</div>'
+                );
+
+                totalEl.innerText = '₹' + ((data.total_amount == null) ? '0' : data.total_amount);
+
+                if(!data.tickets || data.tickets.length === 0){
+                    bodyEl2.innerHTML = '<tr><td colspan="5" class="no-data"><i class="fas fa-ticket-alt"></i><p>No tickets for this trip</p></td></tr>';
+                    showTab('trips');
+                    return;
+                }
+
+                var rows = '';
+                for(var i=0;i<data.tickets.length;i++){
+                    var t = data.tickets[i];
+                    var timeText = t.created_at ? new Date(t.created_at).toLocaleString() : '';
+                    rows += '<tr>' +
+                        '<td><span class="badge">#' + t.id + '</span></td>' +
+                        '<td><i class="fas fa-circle" style="color: var(--success); font-size: 8px; margin-right: 5px;"></i>' + (t.source_stop || '') + '</td>' +
+                        '<td><i class="fas fa-circle" style="color: var(--danger); font-size: 8px; margin-right: 5px;"></i>' + (t.destination_stop || '') + '</td>' +
+                        '<td><span class="fare-badge">₹' + (t.fare == null ? '' : t.fare) + '</span></td>' +
+                        '<td>' + timeText + '</td>' +
+                    '</tr>';
+                }
+                bodyEl2.innerHTML = rows;
+                showTab('trips');
+            })
+            .catch(function(err){
+                setTripError('Network error while loading trip');
+                try{ console.error(err); }catch(e){}
+            });
+    };
+
+    // -----------------------------
+    // Leaflet setup (optional)
+    // -----------------------------
+    var KBUS_YELLOW_ICON = null;
+    if(window.L && L.icon){
+        var __kbusYellowSvg = (
+            '<svg xmlns="http://www.w3.org/2000/svg" width="30" height="45" viewBox="0 0 30 45">'
+            + '<path d="M15 44.5C15 44.5 27.5 29.8 27.5 15.4C27.5 6.9 21.9 0.5 15 0.5C8.1 0.5 2.5 6.9 2.5 15.4C2.5 29.8 15 44.5 15 44.5Z" fill="#f59e0b" stroke="#b45309" stroke-width="1.5"/>'
+            + '<circle cx="15" cy="15.5" r="6.2" fill="#ffffff" opacity="0.95"/>'
+            + '</svg>'
+        );
+        // Note: keep icon embedded so it works even if /static isn't served.
+        KBUS_YELLOW_ICON = L.icon({
+            iconUrl: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(__kbusYellowSvg),
+            iconSize: [30, 45],
+            iconAnchor: [15, 45],
+            popupAnchor: [0, -42],
+        });
+    }
 
     // Ensure Leaflet's default marker icons load correctly (prevents "invisible" markers
     // when marker PNG assets can't be resolved).
@@ -688,7 +810,7 @@ small {
     var busIdOk = (typeof busId === 'number' && !isNaN(busId));
 
     var map = null;
-    if(busIdOk){
+    if(busIdOk && window.L && L.map){
         map = L.map('driver_map').setView([11.75,75.57],13);
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '© OpenStreetMap contributors'
@@ -700,7 +822,10 @@ small {
         try{
             var __kbusRouteGeoJson = L.geoJson(null, {
                 pointToLayer: function(feature, latlng){
-                    return L.marker(latlng, { icon: KBUS_YELLOW_ICON });
+                    if(KBUS_YELLOW_ICON){
+                        return L.marker(latlng, { icon: KBUS_YELLOW_ICON });
+                    }
+                    return L.marker(latlng);
                 }
             });
 
@@ -722,6 +847,9 @@ small {
     var infoEl = document.getElementById('driver_info');
 
     function updateInfo(data){
+        if(!infoEl){
+            return;
+        }
         var speedMps = (data.speed == null) ? null : Number(data.speed);
         var speedKmh = (speedMps == null || isNaN(speedMps)) ? null : (speedMps * 3.6);
         var updatedText = data.time ? new Date(data.time).toLocaleString() : '—';
@@ -762,7 +890,9 @@ small {
                     if(marker){
                         marker.setLatLng([data.lat, data.lng]);
                     } else {
-                        marker = L.marker([data.lat, data.lng], { icon: KBUS_YELLOW_ICON }).addTo(map);
+                        marker = KBUS_YELLOW_ICON
+                            ? L.marker([data.lat, data.lng], { icon: KBUS_YELLOW_ICON }).addTo(map)
+                            : L.marker([data.lat, data.lng]).addTo(map);
                     }
                     map.panTo([data.lat, data.lng]);
                 }
@@ -788,7 +918,9 @@ small {
         if(marker){
             marker.setLatLng([lat, lng]);
         } else {
-            marker = L.marker([lat, lng], { icon: KBUS_YELLOW_ICON }).addTo(map);
+            marker = KBUS_YELLOW_ICON
+                ? L.marker([lat, lng], { icon: KBUS_YELLOW_ICON }).addTo(map)
+                : L.marker([lat, lng]).addTo(map);
         }
         map.panTo([lat, lng]);
 
@@ -876,70 +1008,7 @@ small {
         }
     }
 
-    window.loadTrip = function(tripId){
-        fetch('/transport/driver-trip/' + tripId + '/')
-            .then(function(res){ return res.json(); })
-            .then(function(data){
-                var bodyEl = document.getElementById('historyTicketsBody');
-                var totalEl = document.getElementById('historyTotal');
-                var metaEl = document.getElementById('tripMeta');
-                if(!bodyEl || !totalEl || !metaEl) return;
-                
-                if(data.error){
-                    bodyEl.innerHTML = '<tr><td colspan="5" class="no-data"><i class="fas fa-exclamation-circle"></i><p>' + data.error + '</p></td></tr>';
-                    totalEl.innerText = '₹0';
-                    metaEl.innerHTML = '';
-                    return;
-                }
-
-                var startText = data.start_time ? new Date(data.start_time).toLocaleString() : '';
-                var endText = data.end_time ? new Date(data.end_time).toLocaleString() : 'Active';
-                metaEl.innerHTML = `
-                    <div class="info-item">
-                        <span class="info-label">Trip #${data.trip_id}</span>
-                        <span class="info-value">${startText} - ${endText}</span>
-                    </div>
-                `;
-
-                totalEl.innerText = '₹' + ((data.total_amount == null) ? '0' : data.total_amount);
-
-                if(!data.tickets || data.tickets.length === 0){
-                    bodyEl.innerHTML = '<tr><td colspan="5" class="no-data"><i class="fas fa-ticket-alt"></i><p>No tickets for this trip</p></td></tr>';
-                    return;
-                }
-
-                var rows = '';
-                for(var i=0;i<data.tickets.length;i++){
-                    var t = data.tickets[i];
-                    var timeText = t.created_at ? new Date(t.created_at).toLocaleString() : '';
-                    rows += '<tr>' +
-                        '<td><span class="badge">#' + t.id + '</span></td>' +
-                        '<td><i class="fas fa-circle" style="color: var(--success); font-size: 8px; margin-right: 5px;"></i>' + (t.source_stop || '') + '</td>' +
-                        '<td><i class="fas fa-circle" style="color: var(--danger); font-size: 8px; margin-right: 5px;"></i>' + (t.destination_stop || '') + '</td>' +
-                        '<td><span class="fare-badge">₹' + (t.fare == null ? '' : t.fare) + '</span></td>' +
-                        '<td>' + timeText + '</td>' +
-                    '</tr>';
-                }
-                bodyEl.innerHTML = rows;
-                
-                // Switch to trips tab
-                showTab('trips');
-            })
-            .catch(function(){
-                var bodyEl = document.getElementById('historyTicketsBody');
-                var totalEl = document.getElementById('historyTotal');
-                var metaEl = document.getElementById('tripMeta');
-                if(bodyEl){
-                    bodyEl.innerHTML = '<tr><td colspan="5" class="no-data"><i class="fas fa-exclamation-circle"></i><p>Network error while loading trip</p></td></tr>';
-                }
-                if(totalEl){
-                    totalEl.innerText = '₹0';
-                }
-                if(metaEl){
-                    metaEl.innerHTML = '';
-                }
-            });
-    };
+    // NOTE: window.loadTrip is defined at the top of this script
 
     // Tabs
     var tabLiveBtn = document.getElementById('tabLive');
