@@ -7,6 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet-omnivore/leaflet-omnivore.min.js"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
 <style>
@@ -690,6 +691,27 @@ small {
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '© OpenStreetMap contributors'
     }).addTo(map);
+
+    // Overlay your custom K-BUS route map (KML)
+    try{
+        var __kbusRouteGeoJson = L.geoJson(null, {
+            pointToLayer: function(feature, latlng){
+                return L.marker(latlng, { icon: KBUS_YELLOW_ICON });
+            }
+        });
+
+        var __kbusRouteLayer = omnivore.kml("{% url 'kbus_route_kml' %}", null, __kbusRouteGeoJson)
+        .on('ready', function(){
+            // Fit once so route is visible even before GPS updates
+            if(!window.__kbusDriverRouteFitted){
+                window.__kbusDriverRouteFitted = true;
+                try{ map.fitBounds(__kbusRouteLayer.getBounds()); }catch(e){}
+            }
+        })
+        .addTo(map);
+    }catch(e){
+        // If omnivore fails to load, base map still works
+    }
 
     var marker;
     var infoEl = document.getElementById('driver_info');
