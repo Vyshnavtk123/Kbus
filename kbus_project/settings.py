@@ -186,7 +186,8 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+# Display timezone for templates/admin. Datetimes are still stored in UTC when USE_TZ=True.
+TIME_ZONE = env('TIME_ZONE', default='Asia/Kolkata')
 
 USE_I18N = True
 

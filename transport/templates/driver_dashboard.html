@@ -654,6 +654,41 @@ small {
     // -----------------------------
     // Trip VIEW utilities (must work even if Leaflet/CDNs fail)
     // -----------------------------
+    function fmtIstDateTime(value){
+        if(!value){
+            return '';
+        }
+        try{
+            return new Date(value).toLocaleString('en-IN', {
+                timeZone: 'Asia/Kolkata',
+                year: 'numeric',
+                month: 'short',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit',
+                hour12: false,
+            });
+        }catch(e){
+            return '';
+        }
+    }
+
+    function fmtIstTime(value){
+        if(!value){
+            return '';
+        }
+        try{
+            return new Date(value).toLocaleTimeString('en-IN', {
+                timeZone: 'Asia/Kolkata',
+                hour: '2-digit',
+                minute: '2-digit',
+                hour12: false,
+            });
+        }catch(e){
+            return '';
+        }
+    }
+
     function setTripError(message){
         var bodyEl = document.getElementById('historyTicketsBody');
         var totalEl = document.getElementById('historyTotal');
@@ -729,8 +764,8 @@ small {
                     return;
                 }
 
-                var startText = data.start_time ? new Date(data.start_time).toLocaleString() : '';
-                var endText = data.end_time ? new Date(data.end_time).toLocaleString() : 'Active';
+                var startText = fmtIstDateTime(data.start_time);
+                var endText = data.end_time ? fmtIstDateTime(data.end_time) : 'Active';
                 metaEl.innerHTML = (
                     '<div class="info-item">'
                     + '<span class="info-label">Trip #' + String(data.trip_id || '') + '</span>'
@@ -749,7 +784,7 @@ small {
                 var rows = '';
                 for(var i=0;i<data.tickets.length;i++){
                     var t = data.tickets[i];
-                    var timeText = t.created_at ? new Date(t.created_at).toLocaleString() : '';
+                    var timeText = fmtIstDateTime(t.created_at);
                     rows += '<tr>' +
                         '<td><span class="badge">#' + t.id + '</span></td>' +
                         '<td><i class="fas fa-circle" style="color: var(--success); font-size: 8px; margin-right: 5px;"></i>' + (t.source_stop || '') + '</td>' +
@@ -852,7 +887,7 @@ small {
         }
         var speedMps = (data.speed == null) ? null : Number(data.speed);
         var speedKmh = (speedMps == null || isNaN(speedMps)) ? null : (speedMps * 3.6);
-        var updatedText = data.time ? new Date(data.time).toLocaleString() : '—';
+        var updatedText = data.time ? fmtIstDateTime(data.time) : '—';
         var speedText = (speedKmh == null) ? '—' : speedKmh.toFixed(1) + ' km/h';
 
         infoEl.innerHTML = `
@@ -971,7 +1006,7 @@ small {
                 var rows = '';
                 for(var i=0;i<data.tickets.length;i++){
                     var t = data.tickets[i];
-                    var timeText = t.created_at ? new Date(t.created_at).toLocaleTimeString() : '';
+                    var timeText = fmtIstTime(t.created_at);
                     rows += '<tr>' +
                         '<td><span class="badge">#' + t.id + '</span></td>' +
                         '<td><i class="fas fa-circle" style="color: var(--success); font-size: 8px; margin-right: 5px;"></i>' + (t.source_stop || '') + '</td>' +

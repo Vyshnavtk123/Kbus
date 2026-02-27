@@ -770,7 +770,7 @@ function trackBus(){
 
                             var speedMps = (data.speed == null) ? null : Number(data.speed);
                             var speedKmh = (speedMps == null || isNaN(speedMps)) ? null : (speedMps * 3.6);
-                            var updatedText = data.time ? new Date(data.time).toLocaleString() : '—';
+                            var updatedText = data.time ? new Date(data.time).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }) : '—';
                             var etaText = (data.eta_minutes == null) ? '—' : data.eta_minutes + ' min';
                             var currentStop = data.current_stop || '—';
                             var nextStop = data.next_stop || '—';
