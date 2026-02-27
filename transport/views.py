@@ -11,6 +11,7 @@ from django.contrib import messages
 from django.contrib.auth import authenticate, get_user_model, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.staticfiles import finders
+from django.db.utils import OperationalError
 from django.db.models import Sum
 from django.http import Http404, HttpResponse, JsonResponse
 from django.shortcuts import redirect, render
@@ -332,7 +333,16 @@ def login_view(request):
     if request.method == 'POST':
         username = (request.POST.get('username') or '').strip()
         password = request.POST.get('password') or ''
-        user = authenticate(request, username=username, password=password)
+        try:
+            user = authenticate(request, username=username, password=password)
+        except OperationalError:
+            return render(
+                request,
+                'login.html',
+                {
+                    'error': 'Server database is not available right now. Please try again in 1 minute.'
+                },
+            )
         if user is None:
             return render(request, 'login.html', {'error': 'Invalid credentials'})
         login(request, user)
