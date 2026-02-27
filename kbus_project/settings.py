@@ -158,6 +158,14 @@ if _database_url:
             ssl_require=not DEBUG,
         )
     }
+    try:
+        _engine = (DATABASES.get('default') or {}).get('ENGINE')
+        if _engine and 'postgres' in str(_engine):
+            DATABASES['default'].setdefault('OPTIONS', {})
+            # Fail fast instead of hanging the request (e.g., during login).
+            DATABASES['default']['OPTIONS'].setdefault('connect_timeout', 10)
+    except Exception:
+        pass
 else:
     # Fallback for local development.
     _engine = env('ENGINE', default='django.db.backends.sqlite3')
