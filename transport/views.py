@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import math
+import os
 import re
 from decimal import Decimal, ROUND_CEILING
 from datetime import timedelta
@@ -17,6 +18,7 @@ from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_GET, require_http_methods
 
+from .ai_support import select_relevant_faq
 from .models import (
     Bus,
     BusLiveLocation,
@@ -27,6 +29,12 @@ from .models import (
     Stop,
     Ticket,
 )
+
+
+try:
+    from openai import OpenAI  # type: ignore
+except Exception:  # pragma: no cover
+    OpenAI = None
 
 
 @require_GET
@@ -173,6 +181,87 @@ def _normalize_bus_otp(value) -> str | None:
     if not _OTP_RE.fullmatch(otp):
         return None
     return otp
+
+
+@login_required
+@require_http_methods(["POST"])
+def support_chat(request):
+    """Passenger/Driver/Admin support chatbot.
+
+    Security policy:
+    - Login required (keeps usage within authenticated panels)
+    - Answers must be grounded to our internal FAQ snippets
+    """
+
+    message = ""
+    if request.content_type and 'application/json' in request.content_type:
+        try:
+            payload = json.loads((request.body or b'{}').decode('utf-8'))
+        except Exception:
+            payload = {}
+        message = (payload.get('message') or '').strip()
+    else:
+        message = (request.POST.get('message') or '').strip()
+
+    if not message:
+        return JsonResponse({'error': 'Message is required'}, status=400)
+    if len(message) > 800:
+        return JsonResponse({'error': 'Message too long'}, status=400)
+
+    api_key = os.environ.get('OPENAI_API_KEY')
+    if not api_key:
+        return JsonResponse({'error': 'Chatbot is not configured (missing OPENAI_API_KEY)'}, status=503)
+    if OpenAI is None:
+        return JsonResponse({'error': 'Chatbot dependency missing (openai package not installed)'}, status=503)
+
+    model = os.environ.get('OPENAI_MODEL', 'gpt-4o-mini')
+    snippets = select_relevant_faq(message, limit=4)
+
+    if snippets:
+        faq_text = "\n\n".join(
+            [
+                f"FAQ: {e.title}\nAnswer: {e.answer}"
+                for e in snippets
+            ]
+        )
+    else:
+        faq_text = "(No matching FAQ entry)"
+
+    system = (
+        "You are K-BUS Support.\n"
+        "Rules:\n"
+        "- Answer ONLY using the provided FAQ snippets.\n"
+        "- If the FAQ does not contain the answer, say you don't know and ask the user to contact the admin.\n"
+        "- Keep it short, clear, and step-by-step.\n"
+        "- Never ask for passwords. Never request OTP as a secret.\n"
+    )
+
+    user = (
+        "User message:\n"
+        f"{message}\n\n"
+        "FAQ snippets:\n"
+        f"{faq_text}"
+    )
+
+    try:
+        client = OpenAI(api_key=api_key)
+        resp = client.chat.completions.create(
+            model=model,
+            messages=[
+                {"role": "system", "content": system},
+                {"role": "user", "content": user},
+            ],
+            temperature=0.2,
+            max_tokens=220,
+        )
+        reply = (resp.choices[0].message.content or '').strip()
+    except Exception:
+        return JsonResponse({'error': 'Chatbot service error'}, status=502)
+
+    if not reply:
+        reply = "Sorry, I couldn't generate a response. Please contact the admin."
+
+    return JsonResponse({'reply': reply})
 
 
 def _to_int(value, *, min_value: int | None = None, max_value: int | None = None):

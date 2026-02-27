@@ -510,6 +510,8 @@ body {
 
 {% if ticket.expires_at %}
 <script>
+
+{% include 'partials/support_chat_widget.html' %}
 var expiry = new Date("{{ ticket.expires_at|date:'c' }}").getTime();
 
 var timer = setInterval(function(){
