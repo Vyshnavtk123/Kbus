@@ -41,22 +41,44 @@ SECRET_KEY = env('SECRET_KEY')
 # Render sets env vars; default to safe production behavior.
 DEBUG = env.bool('DEBUG', default=False)
 
+def _unique_hosts(values):
+    seen = set()
+    out = []
+    for v in values:
+        v = (v or '').strip()
+        if not v:
+            continue
+        if v in seen:
+            continue
+        seen.add(v)
+        out.append(v)
+    return out
+
+
 # Allow Render hostnames + local dev by default.
 # You can override via env var: ALLOWED_HOSTS=kbus-1.onrender.com,custom.domain
-ALLOWED_HOSTS = env.list(
-    'ALLOWED_HOSTS',
-    default=['kbus-1.onrender.com', 'localhost', '127.0.0.1', '.onrender.com'],
-)
+_default_hosts = ['kbus-1.onrender.com', 'localhost', '127.0.0.1', '.onrender.com']
+
+# Render provides this env var at runtime; include it automatically.
+_render_host = os.environ.get('RENDER_EXTERNAL_HOSTNAME')
+if _render_host:
+    _default_hosts.append(_render_host)
+
+# Needed for Django test client and some health checks
+_default_hosts.append('testserver')
+
+ALLOWED_HOSTS = _unique_hosts(env.list('ALLOWED_HOSTS', default=_default_hosts))
 
 # If you serve the site over HTTPS behind a proxy (Render), Django needs this
 # for correct scheme detection (affects CSRF/origin checks).
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 # For HTTPS POSTs (like login) on Render/custom domains.
-CSRF_TRUSTED_ORIGINS = env.list(
-    'CSRF_TRUSTED_ORIGINS',
-    default=['https://kbus-1.onrender.com', 'https://*.onrender.com'],
-)
+_default_csrf = ['https://kbus-1.onrender.com', 'https://*.onrender.com']
+if _render_host:
+    _default_csrf.append('https://' + _render_host)
+
+CSRF_TRUSTED_ORIGINS = env.list('CSRF_TRUSTED_ORIGINS', default=_unique_hosts(_default_csrf))
 
 AUTH_USER_MODEL = 'transport.User'
 
