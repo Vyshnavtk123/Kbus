@@ -120,11 +120,17 @@ def _route_path_distance_m(route, source_stop: Stop, dest_stop: Stop) -> float:
     id_to_index = {s.id: i for i, s in enumerate(stops)}
     i_src = id_to_index.get(source_stop.id)
     i_dst = id_to_index.get(dest_stop.id)
-    if i_src is None or i_dst is None or i_dst <= i_src:
+    if i_src is None or i_dst is None:
         return float(distance_meters(source_stop.latitude, source_stop.longitude, dest_stop.latitude, dest_stop.longitude))
 
+    if i_src == i_dst:
+        return 0.0
+
+    a_i = min(i_src, i_dst)
+    b_i = max(i_src, i_dst)
+
     total = 0.0
-    for i in range(i_src, i_dst):
+    for i in range(a_i, b_i):
         a = stops[i]
         b = stops[i + 1]
         total += float(distance_meters(a.latitude, a.longitude, b.latitude, b.longitude))
@@ -342,10 +348,6 @@ def bus_ticket(request):
 
     if source_stop.id == dest_stop.id:
         messages.error(request, 'Source and destination cannot be the same stop')
-        return redirect('passenger_select', otp=otp)
-
-    if dest_stop.order <= source_stop.order:
-        messages.error(request, 'Invalid stop selection')
         return redirect('passenger_select', otp=otp)
 
     distance_m = _route_path_distance_m(bus.route, source_stop, dest_stop)
@@ -605,9 +607,6 @@ def calculate_fare(request):
 
     if source_stop.id == dest_stop.id:
         return JsonResponse({'error': 'Source and destination cannot be the same stop'}, status=400)
-
-    if dest_stop.order <= source_stop.order:
-        return JsonResponse({'error': 'Invalid stop selection'}, status=400)
 
     distance_m = _route_path_distance_m(bus.route, source_stop, dest_stop)
     fare = _fare_from_distance_m(distance_m)
