@@ -145,17 +145,40 @@ WSGI_APPLICATION = 'kbus_project.wsgi.application'
 # }
 
 
-DATABASES = {
+_database_url = os.environ.get('DATABASE_URL')
+if not _database_url:
+    _database_url = env('DATABASE_URL', default=None)
 
-     'default': {
-         'ENGINE': env('ENGINE'),
-         'NAME': env('NAME'),
-         'USER': env('USER'),
-         'PASSWORD': env('PASSWORD'),
-         'HOST': env('HOST'),
-         'PORT': 6543 ,
-     }
- }
+if _database_url:
+    # Render (and most PaaS) provides DATABASE_URL for Postgres.
+    DATABASES = {
+        'default': dj_database_url.parse(
+            _database_url,
+            conn_max_age=600,
+            ssl_require=not DEBUG,
+        )
+    }
+else:
+    # Fallback for local development.
+    _engine = env('ENGINE', default='django.db.backends.sqlite3')
+    if _engine == 'django.db.backends.sqlite3':
+        DATABASES = {
+            'default': {
+                'ENGINE': 'django.db.backends.sqlite3',
+                'NAME': BASE_DIR / 'db.sqlite3',
+            }
+        }
+    else:
+        DATABASES = {
+            'default': {
+                'ENGINE': _engine,
+                'NAME': env('NAME', default=''),
+                'USER': env('USER', default=''),
+                'PASSWORD': env('PASSWORD', default=''),
+                'HOST': env('HOST', default=''),
+                'PORT': env('PORT', default='5432'),
+            }
+        }
 
 
 
